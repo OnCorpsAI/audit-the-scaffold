@@ -1,0 +1,41 @@
+scripts/generate_stats_macros.py
+  s_f1b6cf7eaefa8a::t_c539f1f3f2457a 1-118
+stats_macros.tex
+  s_f1b6cf7eaefa8a::t_1b547b6d096c6c 24
+company_simulations.py
+  s_f1b6cf7eaefa8a::t_97a1e48a695592 1327
+  s_f1b6cf7eaefa8a::t_6b6d19a91dafda 1235-1241
+  s_f1b6cf7eaefa8a::t_efb575b9b73073 1232-1234
+  s_f1b6cf7eaefa8a::t_334ea692a040c5 1326
+  s_f1b6cf7eaefa8a::t_24e6d8a96ceee6 1229-1231
+scripts/part_b_anova_power.py
+  s_f1b6cf7eaefa8a::t_2d6df1ed6a678f 691-696
+  s_f1b6cf7eaefa8a::t_51b3978b5e3d38 441-446,458-459,465
+  s_f1b6cf7eaefa8a::t_d5ef31fde662b3 652-657,659
+  s_f1b6cf7eaefa8a::t_2437993877950a 255-276,301,307-319,327-330,382
+scripts/part_b_paper_numbers.py
+  s_f1b6cf7eaefa8a::t_4df3ca561f6cfb 188-194
+  s_f1b6cf7eaefa8a::t_5c08eb291b6e8f 200
+  s_f1b6cf7eaefa8a::t_de32c746ed67f7 161
+data/company_params.json
+  s_f1b6cf7eaefa8a::t_9e2608d12e0aa8 123
+  s_f1b6cf7eaefa8a::t_9d7b211738fb6e 117-122
+test_part_b_anova_power.py
+  s_f1b6cf7eaefa8a::t_7295c463466375 82-94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "80fa7e97e5726fef817b9de5a84664e7a5587406",
+  "prompts": {},
+  "sessions": {
+    "s_f1b6cf7eaefa8a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c10614da-e883-4717-9db3-b53d5147200b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
