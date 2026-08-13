@@ -1,0 +1,40 @@
+scripts/part_c_control_stats.py
+  s_40b1615812bf8c::t_3911e67687535e 88-89
+  s_40b1615812bf8c::t_e715dc442442a6 1-57,60-87,90-184
+  s_40b1615812bf8c::t_002b6a30f4f31e 58-59
+  s_40b1615812bf8c::t_6aa3f7ee67cb51 185-187
+stats_macros.tex
+  s_40b1615812bf8c::t_22ab29aeb09b9f 200-202
+  s_40b1615812bf8c::t_2044d9ef1fcbfd 122,135-140,142-143,145-154,157-158,165,194-199,203-206,208,210-213
+scripts/generate_stats_macros.py
+  s_40b1615812bf8c::t_a1d2a16c1109f7 133-234
+company_simulations.py
+  s_40b1615812bf8c::t_125c873c9ddbe8 903-924
+.gitignore
+  s_40b1615812bf8c::t_cef851efe0722e 22
+test_company.py
+  s_40b1615812bf8c::t_54498715b23e75 1299-1336
+  s_40b1615812bf8c::t_002b6a30f4f31e 1240
+git_session_extractor.py
+  s_40b1615812bf8c::t_ccc859588060bc 572-574,576
+data/company_control_sessions.json
+  s_40b1615812bf8c::t_03a414f34c2051 472232-472233
+data/part_c_control_stats.json
+  s_40b1615812bf8c::t_ecae30678bbc2f 1-234
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "14f7e2f55f3dde1440900f1d428bfa484df8a2e7",
+  "prompts": {},
+  "sessions": {
+    "s_40b1615812bf8c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8210b35e-bb72-4d33-9c83-7bab5ec36b7d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
