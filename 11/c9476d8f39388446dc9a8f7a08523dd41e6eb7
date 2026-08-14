@@ -1,0 +1,67 @@
+paper.tex
+  s_c33fbbeb98da23::t_d03f35a4bf0b64 183
+  s_c33fbbeb98da23::t_dfc61945184509 105
+  s_c33fbbeb98da23::t_35e61500407593 189
+  s_c33fbbeb98da23::t_1638458de5e96e 237
+  s_c33fbbeb98da23::t_7e42ef4f00c7fb 139
+  s_c33fbbeb98da23::t_fb9ec8ad1558b4 82,208
+  s_c33fbbeb98da23::t_69bbd0fc76248f 95-97,224,245
+  s_c33fbbeb98da23::t_b4ac39f5696bec 198
+  s_c33fbbeb98da23::t_cc3eb88e828602 165
+  s_c33fbbeb98da23::t_1fb146236ed138 218,251
+  s_c33fbbeb98da23::t_1f5677bdd4cf70 194
+  s_c33fbbeb98da23::t_3ebbed624dc15b 196
+  s_c33fbbeb98da23::t_610b80401fa120 98
+  s_c33fbbeb98da23::t_e0f80dbc3aa38c 76,78,80
+  s_c33fbbeb98da23::t_f23b856778334a 228,236
+  s_c33fbbeb98da23::t_d8d0fe727c3c55 200,202,204
+  s_c33fbbeb98da23::t_e5b758a4d26e37 131
+  s_c33fbbeb98da23::t_e969ebb6467e17 91
+  s_c33fbbeb98da23::t_d49c35af038b1a 107,216
+  s_c33fbbeb98da23::t_3cfd3a3d3c7193 127
+  s_c33fbbeb98da23::t_e38fb9889468dd 209
+  s_c33fbbeb98da23::t_05a382aa8278e0 181
+  s_c33fbbeb98da23::t_068a1a47511324 172
+  s_c33fbbeb98da23::t_67e1f9183d495d 229
+  s_c33fbbeb98da23::t_7a2afe4781b232 119
+scripts/generate_p16_figures.py
+  s_c33fbbeb98da23::t_2018d54dc3c09a 2-6
+paper_appendix.tex
+  s_c33fbbeb98da23::t_85874d3c8a1b73 467-471
+  s_c33fbbeb98da23::t_fe37932e7908d8 293
+  s_c33fbbeb98da23::t_b4ac39f5696bec 338
+  s_c33fbbeb98da23::t_6ad0fa07e06f4f 344
+  s_c33fbbeb98da23::t_29db81a52ede85 702
+  s_c33fbbeb98da23::t_a089ea97504604 161,217,392,663,703
+  s_c33fbbeb98da23::t_f9627d814c18dd 283-289
+  s_c33fbbeb98da23::t_646956a603e43b 135
+docs/index.html
+  s_c33fbbeb98da23::t_6d80100c8219b1 409-412
+  s_c33fbbeb98da23::t_1019468fc517ad 351-365,368-372
+  s_c33fbbeb98da23::t_0a16a0556785db 513-522
+  s_c33fbbeb98da23::t_f35569607a0f92 333-341,388-389,391-406,413-425
+Makefile
+  s_c33fbbeb98da23::t_01e3f67909a710 9-11
+  s_c33fbbeb98da23::t_51d6ab2a02a413 18
+test_references.py
+  s_c33fbbeb98da23::t_e50f23bab0ac23 209-215,217-234
+  s_c33fbbeb98da23::t_f077537ab7aaf8 216
+README.md
+  s_c33fbbeb98da23::t_0c9734a638ce10 44-46,87-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "11c9476d8f39388446dc9a8f7a08523dd41e6eb7",
+  "prompts": {},
+  "sessions": {
+    "s_c33fbbeb98da23": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7875ffc4-e052-4e0b-9459-5868d95a761e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
