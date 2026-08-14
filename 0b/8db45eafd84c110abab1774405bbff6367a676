@@ -1,0 +1,23 @@
+paper.tex
+  s_27d3467a851776::t_f93c21831063d8 258
+  s_27d3467a851776::t_40a3278afe02f3 252
+paper_appendix.tex
+  s_27d3467a851776::t_bfac16bb659850 603
+  s_27d3467a851776::t_d749ee06889bc2 543
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "0b8db45eafd84c110abab1774405bbff6367a676",
+  "prompts": {},
+  "sessions": {
+    "s_27d3467a851776": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a92902bf-032e-4394-a874-2b66417c1767",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
