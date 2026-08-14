@@ -1,0 +1,19 @@
+.env.example
+  s_494e82f788a250::t_b66a7aba32c6cb 1-10,12-100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "a169831c410e8f2854def5a0a4ae7857a03d3ad5",
+  "prompts": {},
+  "sessions": {
+    "s_494e82f788a250": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fabf543f-347a-4671-974e-4918e072c100",
+        "model": "unknown"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
