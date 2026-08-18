@@ -1,0 +1,50 @@
+stats_macros.tex
+  s_6e229bdb626775::t_ef19f0e3f2fd28 187-193
+data/part_b_edge_overlap.json
+  s_6e229bdb626775::t_493937399733df 417-434,441-459,466-484,491-509,598-616,623-641,648-666,673-691,750-768,775-793,800-818,825-843,901-919,926-944,951-969,976-994
+  s_6e229bdb626775::t_a12ec59d9dce60 416
+tasks/todo.md
+  s_6e229bdb626775::t_1563e64ebf6fdb 1155-1225
+scripts/generate_p16_figures.py
+  s_6e229bdb626775::t_21455794b24a6a 352-354,356-366,368-370,373-374
+  s_6e229bdb626775::t_5f428dc9254fa3 388
+  s_6e229bdb626775::t_d99f93118be7d5 297-308
+  s_6e229bdb626775::t_003a957f878b68 377-379
+  s_6e229bdb626775::t_f2a04500424ad9 384-387,389
+test_generate_stats_macros.py
+  s_6e229bdb626775::t_6bf328e7ae15cd 126-172
+paper_appendix.tex
+  s_6e229bdb626775::t_37ef196a810110 289,297
+scripts/generate_stats_macros.py
+  s_6e229bdb626775::t_095fedb65d3507 81-107
+  s_6e229bdb626775::t_36ee4ed799c2dd 341-343
+  s_6e229bdb626775::t_1bda6aff9c09a7 278
+  s_6e229bdb626775::t_5a7a2b578dc96b 338-340
+scripts/part_b_edge_overlap.py
+  s_6e229bdb626775::t_abb58a7b22ab66 657,659,661,663-664
+  s_6e229bdb626775::t_c5bf8842e71511 608-612
+  s_6e229bdb626775::t_a8ca7535dbcc2b 628,644
+  s_6e229bdb626775::t_15c3c9da4f815b 642
+  s_6e229bdb626775::t_d632e3c8b11879 563-592
+test_part_b_edge_overlap.py
+  s_6e229bdb626775::t_3737fb464bc3ad 130-201,203-216
+  s_6e229bdb626775::t_fe2da6026da0a1 202
+docs/index.html
+  s_6e229bdb626775::t_e894c85b28e4a8 528-531
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "79f722d379815e36be7d2303e093384e5702bf6d",
+  "prompts": {},
+  "sessions": {
+    "s_6e229bdb626775": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf45e88-7e8b-497b-b055-9601216d7fe8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
