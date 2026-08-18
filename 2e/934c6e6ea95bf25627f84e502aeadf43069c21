@@ -1,0 +1,19 @@
+.gitignore
+  s_2c7c5fd65dfe1b::t_565d510c0baccc 78-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "2e934c6e6ea95bf25627f84e502aeadf43069c21",
+  "prompts": {},
+  "sessions": {
+    "s_2c7c5fd65dfe1b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6a19a38e-c8ee-461b-a620-2a94d9fead42",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
