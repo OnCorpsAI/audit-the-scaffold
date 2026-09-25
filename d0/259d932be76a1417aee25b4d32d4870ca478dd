@@ -1,0 +1,25 @@
+.gitignore
+  s_a67eaf61d0cb1d::t_67b46bf532a92e 83-85
+README.md
+  s_a67eaf61d0cb1d::t_5867054c783cf1 209-213
+scripts/prepare_arxiv.sh
+  s_a67eaf61d0cb1d::t_a96860304c6ad4 1-127
+Makefile
+  s_a67eaf61d0cb1d::t_c04812ac7d64a6 6,36,87-91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d0259d932be76a1417aee25b4d32d4870ca478dd",
+  "prompts": {},
+  "sessions": {
+    "s_a67eaf61d0cb1d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "205d6ca6-0470-43c5-967b-eb6fe7b7c1b3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
