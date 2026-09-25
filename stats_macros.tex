@@ -1,0 +1,496 @@
+% stats_macros.tex — single source of truth for headline statistics quoted
+% more than once across the NeurIPS workshop main body and appendix.
+% \input by paper.tex, which also \inputs paper_appendix.tex, so the main body and
+% the appendix cannot drift from each other (or from themselves) on a number.
+%
+% Naming: \statPB... = Part B (SWE-bench ablation), \statPC... = Part C
+% (production sessions). Values are transcribed from the source analysis
+% (scripts/part_b_anova_power.py, scripts/part_b_paper_numbers.py,
+% scripts/part_b_edge_overlap.py, and the Part C statistical outputs) at full
+% stated precision; every in-text mention of these quantities should use the
+% macro, not a hardcoded literal.
+%
+% The blocks that scripts/generate_stats_macros.py patches automatically are
+% Part C Finding 1, the Part B Model effect, the three Part B blocks below marked
+% "measured weak-learning edge", "edge CIs", and "failMult overlap", the block
+% marked "decomposing gamma's complement", the two \statPB*Eta macros, and the
+% Part C version/release counts. Do not hand-edit those values -- re-run the
+% generating script instead. Anything NOT in that set is hand-transcribed and
+% therefore outside --check, which is the failure mode this boundary invites:
+% the \statPB*Eta pair was hand-maintained until 2026-08-14 and \statPBSonnetEta
+% had drifted from every arm's real value, and \statPBEdgeN plus the two
+% \statPB*Edge series were likewise transcribed while being cited in the main
+% text until the edge-decomposition work brought them under the generator.
+% Prefer generating a macro over transcribing it.
+
+% ---- Part B: design ----
+\newcommand{\statPBK}{55}
+\newcommand{\statPBSeeds}{5}
+\newcommand{\statPBRounds}{4}
+\newcommand{\statPBTrajectories}{1{,}650}
+
+% ---- Part B: 2x3 repeated-measures ANOVA ----
+\newcommand{\statPBModelF}{53.46}
+\newcommand{\statPBModelDf}{(1, 54)}
+\newcommand{\statPBModelP}{{<}0.0001}
+\newcommand{\statPBModelEta}{0.497}
+% Same effect with every row contributing its running best instead of its raw final
+% round. The published DV gives a solved row its back-filled 1.0 but an unsolved row
+% whatever its last attempt scored, and the stronger tier solves more rows, so the
+% asymmetry runs with the tier effect; this shows the effect does not rest on it.
+\newcommand{\statPBModelEtaRunningBest}{0.514}
+\newcommand{\statPBModelCohenF}{0.99}
+\newcommand{\statPBModelCohenFCI}{$[0.738, \, 1.319]$}
+\newcommand{\statPBModeF}{0.50}
+\newcommand{\statPBModeDf}{(2, 108)}
+\newcommand{\statPBModeP}{0.61}
+\newcommand{\statPBModeEta}{0.009}
+\newcommand{\statPBModeCohenF}{0.10}
+\newcommand{\statPBInterF}{0.81}
+\newcommand{\statPBInterDf}{(2, 108)}
+\newcommand{\statPBInterP}{0.45}
+\newcommand{\statPBInterEta}{0.015}
+\newcommand{\statPBInterCohenF}{0.12}
+
+% ---- Part B: solve rates (mean-over-seeds final-round quality >= tau=0.6) ----
+\newcommand{\statPBHaikuIndep}{24/55 (44\%) $[31,57]$}
+\newcommand{\statPBHaikuBlind}{26/55 (47\%) $[35,60]$}
+\newcommand{\statPBHaikuDiag}{27/55 (49\%) $[36,62]$}
+\newcommand{\statPBSonnetIndep}{47/55 (85\%) $[74,92]$}
+\newcommand{\statPBSonnetBlind}{47/55 (85\%) $[74,92]$}
+\newcommand{\statPBSonnetDiag}{49/55 (89\%) $[78,95]$}
+\newcommand{\statPBHaikuSolveRange}{44--49\%}
+\newcommand{\statPBSonnetSolveRange}{85--89\%}
+
+% ---- Part B: power analysis ----
+% Bootstrap power at the K=55 we ran, from data/part_b_k55_anova_power.json
+% ["full_pool"]["bootstrap_power"]["55"]: B=0.10657, AB=0.16577. Both are
+% ROUNDED (not truncated) to match the convention used everywhere else in this
+% file and in scripts/generate_stats_macros.py -- AB was previously 16\%,
+% i.e. truncated, while B was rounded, so the pair disagreed on convention.
+\newcommand{\statPBModePower}{11\%}
+\newcommand{\statPBInterPower}{17\%}
+% Required K for 80% power, interpolated on the logit scale between the
+% bracketing points of that same grid (mode: K=430/500; interaction: 300/400).
+\newcommand{\statPBModeReqK}{467}
+\newcommand{\statPBInterReqK}{364}
+% Hand-transcribed, so state the arithmetic: 364/55 = 6.6 (interaction) and
+% 467/55 = 8.5 (mode). "7--8x" rounded the mode end DOWN, which understated how
+% underpowered the null is -- the wrong direction for a disclosure.
+\newcommand{\statPBPowerMultiple}{7--9$\times$}
+
+% ---- Part B: noise floor ----
+\newcommand{\statPBSeedSD}{0.096}
+\newcommand{\statPBSignalOverNoise}{1.7$\times$}
+\newcommand{\statPBBetweenModeSignal}{0.057}
+
+% ---- Part B: measured weak-learning edge (diagnostic arm, N=275/tier) ----
+% GENERATED as of the edge-decomposition work. These three were hand-transcribed
+% while being cited in the main text, i.e. outside --check, which is exactly the
+% drift-prone shape the header warns about; they are now derived from the same
+% cache as the CIs and eta series below.
+\newcommand{\statPBEdgeN}{275}
+\newcommand{\statPBHaikuEdge}{(0, -0.39, -0.46, -0.45)}
+\newcommand{\statPBSonnetEdge}{(0, -0.33, -0.41, -0.46)}
+% Per-round improvement eta_bar_t on the running best (Thm. refinement), rounds
+% 1--3; eta_0 is 0 by construction. GENERATED -- computed from the same pooled
+% diagnostic-arm matrix as the gamma_t series above, so the two are guaranteed
+% commensurable. Self-delimiting ($...$), so they are safe to cite inline.
+\newcommand{\statPBHaikuEta}{$0.097 \to 0.036 \to 0.033$}
+\newcommand{\statPBSonnetEta}{$0.156 \to 0.068 \to 0.029$}
+
+% ---- Part B: edge CIs (task-cluster bootstrap over the 55 tasks) ----
+% Rounds 1--3 only; round 0's gamma is fixed to 0 (no predecessor), so its
+% interval is the degenerate [0,0] and is not quoted.
+\newcommand{\statPBEdgeCIReps}{9{,}999}
+\newcommand{\statPBHaikuEdgeCI}{$[{-}0.449, \, {-}0.322]$, $[{-}0.485, \, {-}0.431]$, $[{-}0.478, \, {-}0.416]$}
+\newcommand{\statPBSonnetEdgeCI}{$[{-}0.373, \, {-}0.285]$, $[{-}0.449, \, {-}0.365]$, $[{-}0.482, \, {-}0.435]$}
+
+% ---- Part B: decomposing gamma's complement (GENERATED) ----
+% gamma uses a strict `>`, so "not improved" pools exact ties with genuine
+% regressions. Splitting them is what stops gamma's sign from being read as
+% AdaBoost's eps > 1/2: a converged, never-regressing refiner scores the floor
+% -0.5 on ties alone. Ranges are over rounds 1--3 and both tiers.
+\newcommand{\statPBTieRange}{80--95\%}
+\newcommand{\statPBRegressMax}{2.9\%}
+\newcommand{\statPBHaikuFlat}{80.7\%}
+\newcommand{\statPBSonnetFlat}{69.1\%}
+% The back-filling that makes the pooled gamma above uninterpretable. The
+% experiment stops calling the model on the round a task first passes and writes a
+% hardcoded 1.0 into every later round; gamma charges each such cell as a tie, so
+% the pooled estimator is dragged down in proportion to the solve rate -- the
+% stronger tier pads more and posts a *more* negative pooled edge.
+\newcommand{\statPBHaikuPadShare}{27.6\%}
+\newcommand{\statPBSonnetPadShare}{53.9\%}
+\newcommand{\statPBHaikuPadTieRange}{33--45\%}
+\newcommand{\statPBSonnetPadTieRange}{74--86\%}
+% Tie share net of the padding -- the genuine no-op rate, which is what supports
+% "refinement turns idempotent". Ranges over rounds 1--3.
+\newcommand{\statPBHaikuGenuineTieRange}{52--59\%}
+\newcommand{\statPBSonnetGenuineTieRange}{13--21\%}
+% Schapire-Singer confidence-rated bound on measured cells: an unchanged round is
+% an abstention, contributing Z_t = W_0 + 2 sqrt(W_+ W_-) < 1 rather than counting
+% as an error. Product over rounds 1--3; the binary formulation's clipped-gamma
+% curve pins at 1.0 instead, which is an artifact of that formulation.
+\newcommand{\statPBHaikuAbstainZ}{0.81}
+\newcommand{\statPBSonnetAbstainZ}{0.67}
+% Edge conditional on the round having changed anything at all. Reported in
+% app:edge-decomposition only: strongly positive, but the denominator is small and
+% selected on outcome, so it cannot carry the primary claim.
+\newcommand{\statPBHaikuMoversEdge}{{+}0.233 to {+}0.500}
+\newcommand{\statPBSonnetMoversEdge}{{+}0.346 to {+}0.393}
+% Edge re-measured on rows where a model call actually happened (q_{t-1} < 1.0) --
+% the estimator the paper reports. Excluding the back-filled cells above is not
+% conditioning on an outcome but declining to average over non-events. The
+% denominator shrinks with t, so the intervals are wider and are quoted alongside
+% the point estimates.
+\newcommand{\statPBHaikuEdgeHeadroom}{({-}0.345, {-}0.435, {-}0.411)}
+\newcommand{\statPBSonnetEdgeHeadroom}{({-}0.084, {-}0.143, {-}0.276)}
+\newcommand{\statPBHaikuEdgeHeadroomCI}{$[{-}0.426, \, {-}0.247]$, $[{-}0.474, \, {-}0.383]$, $[{-}0.460, \, {-}0.348]$}
+\newcommand{\statPBSonnetEdgeHeadroomCI}{$[{-}0.173, \, {+}0.021]$, $[{-}0.286, \, {+}0.028]$, $[{-}0.389, \, {-}0.125]$}
+\newcommand{\statPBHaikuHeadroomN}{194$\to$158 of 275}
+\newcommand{\statPBSonnetHeadroomN}{113$\to$49 of 275}
+% The final-round eligible count. Only the Sonnet value is cited (its round-3
+% denominator is the smallest of the six and the appendix flags it as the least
+% reliable cell); the Haiku twin is generated anyway to keep the per-tier loop
+% symmetric, and is deliberately unused -- check_macro_usage reports it, by design.
+% Finding it a home is not the fix: 158 already reaches the reader inside
+% \statPBHaikuHeadroomN ("194->158 of 275"), so a second mention would be redundant
+% prose, and deleting the declaration would make patch_macros raise on the key the
+% generator still emits.
+\newcommand{\statPBHaikuHeadroomNLast}{158}
+\newcommand{\statPBSonnetHeadroomNLast}{49}
+% Per-round series behind the ranges above, quoted in app:edge-decomposition.
+\newcommand{\statPBHaikuTieSeries}{(0.887, 0.945, 0.949)}
+\newcommand{\statPBSonnetTieSeries}{(0.800, 0.898, 0.953)}
+\newcommand{\statPBHaikuRegressSeries}{(0.004, 0.015, 0.000)}
+\newcommand{\statPBSonnetRegressSeries}{(0.029, 0.011, 0.007)}
+\newcommand{\statPBHaikuRegressRows}{5}
+\newcommand{\statPBSonnetRegressRows}{12}
+
+% ---- Part B: failMult overlap estimator (Prop. diversity's m* < k/2) ----
+% 30 workers = 6 arms (2 tiers x 3 feedback modes) x 5 seeds, on the shared
+% 55-task pool; a worker "fails" a task when its running-best quality stays
+% below tau. Same task-cluster bootstrap as the edge CIs above.
+\newcommand{\statPBOverlapK}{30}
+\newcommand{\statPBOverlapHalfK}{15}
+\newcommand{\statPBOverlapMStar}{30}
+\newcommand{\statPBOverlapViolate}{23/55 (42\%)}
+\newcommand{\statPBOverlapVoteErr}{0.418}
+\newcommand{\statPBOverlapVoteErrCI}{$[0.291, \, 0.545]$}
+\newcommand{\statPBOverlapEpsBar}{0.356}
+\newcommand{\statPBOverlapEpsBarCI}{$[0.277, \, 0.436]$}
+\newcommand{\statPBOverlapMarkov}{0.712}
+\newcommand{\statPBOverlapGap}{{+}0.062}
+\newcommand{\statPBOverlapGapCI}{$[{-}0.018, \, {+}0.142]$}
+\newcommand{\statPBOverlapGapPosPct}{94\%}
+% The paired gap's sign is round-dependent, so the interval above is a fact about the
+% final round and not about every round. LastExclRound is the largest N for which every
+% round 0..N excludes zero, which is what makes "through round N" true by construction
+% rather than by assertion; the other two are that round's gap and interval.
+\newcommand{\statPBOverlapGapLastExclRound}{2}
+\newcommand{\statPBOverlapGapLastExcl}{{+}0.089}
+\newcommand{\statPBOverlapGapLastExclCI}{$[{+}0.011, \, {+}0.167]$}
+\newcommand{\statPBOverlapArms}{6}
+\newcommand{\statPBOverlapArmMStar}{6}
+\newcommand{\statPBOverlapArmViolate}{28/55}
+
+% ---- Part B: the same overlap within one capability tier (GENERATED) ----
+% The k=30 pool mixes tiers, so the two halves of the result above come apart here.
+% m* is a max over tasks and cannot fall under restriction: a task defeating all 30
+% workers defeats the 15 of either tier, so m*=k survives and the headline is not an
+% artifact of pooling a strong tier with a weak one. The gap against eps_bar does NOT
+% survive -- within a tier it is ~0 with an interval straddling zero -- so the pooled
+% +0.062 is a tier-pooling effect and the paper claims nothing from its sign.
+\newcommand{\statPBOverlapTierK}{15}
+\newcommand{\statPBOverlapSonnetMStar}{15}
+\newcommand{\statPBOverlapSonnetViolate}{8/55}
+\newcommand{\statPBOverlapSonnetVoteErr}{0.145}
+\newcommand{\statPBOverlapSonnetEpsBar}{0.147}
+\newcommand{\statPBOverlapSonnetGap}{{-}0.001}
+\newcommand{\statPBOverlapSonnetGapCI}{$[{-}0.039, \, {+}0.038]$}
+\newcommand{\statPBOverlapHaikuMStar}{15}
+\newcommand{\statPBOverlapHaikuViolate}{30/55}
+\newcommand{\statPBOverlapHaikuVoteErr}{0.545}
+\newcommand{\statPBOverlapHaikuEpsBar}{0.565}
+\newcommand{\statPBOverlapHaikuGap}{{-}0.019}
+\newcommand{\statPBOverlapHaikuGapCI}{$[{-}0.057, \, {+}0.017]$}
+
+% ---- Part B: the SWE-bench resolved bar (GENERATED) ----
+% TAU=0.6 thresholds *fractional* FAIL_TO_PASS/PASS_TO_PASS passing, so the solve
+% rates above are NOT comparable to published SWE-bench resolve rates -- a task with
+% 60% of its tests passing counts as solved above and as unresolved by SWE-bench's own
+% criterion. These are the same aggregation (seed-mean of final-round quality,
+% thresholded per task) re-run at 1.0. The edge gamma_t is tau-free, so nothing in the
+% edge series or the ANOVA moves with this threshold; only solve rates and the overlap.
+% Note statPBHaikuResolvedIndep > statPBHaikuResolvedDiag: at the resolved bar the weak
+% tier's mode ordering *reverses* relative to tau=0.6, which is why the point-estimate
+% crossover block below is quoted as a hypothesis rather than a result.
+\newcommand{\statPBTauResolved}{1.0}
+\newcommand{\statPBHaikuResolvedRange}{29--38\%}
+\newcommand{\statPBSonnetResolvedRange}{71--75\%}
+\newcommand{\statPBHaikuResolvedIndep}{21/55 (38\%)}
+\newcommand{\statPBHaikuResolvedDiag}{16/55 (29\%)}
+\newcommand{\statPBSonnetResolvedDiag}{41/55 (75\%)}
+\newcommand{\statPBOverlapMStarResolved}{30}
+\newcommand{\statPBOverlapViolateResolved}{23/55}
+
+% ---- Part B: point-estimate crossover (not significant; quoted as hypothesis) ----
+\newcommand{\statPBHaikuIndepQ}{0.432}
+\newcommand{\statPBHaikuBlindQ}{0.449}
+\newcommand{\statPBHaikuDiagQ}{0.466}
+\newcommand{\statPBSonnetIndepQ}{0.875}
+\newcommand{\statPBSonnetBlindQ}{0.856}
+\newcommand{\statPBSonnetDiagQ}{0.871}
+\newcommand{\statPBContrastFRange}{0.56--2.16}
+\newcommand{\statPBContrastPRange}{0.15--0.46}
+\newcommand{\statPBInteractionPRange}{0.13--0.33}
+
+% ---- Part B: harness-verification audit ----
+\newcommand{\statPBAuditFailN}{23/50 (46\%)}
+\newcommand{\statPBAuditRootCauses}{5}
+\newcommand{\statPBTaskPoolRepos}{10}
+\newcommand{\statPBTaskPoolRetained}{40}
+\newcommand{\statPBTaskPoolBackfilled}{15}
+
+% ---- Part C: dataset ----
+% Re-derived 2026-08-12 on an expanded live repo survey (was 378/1,172/21/28).
+\newcommand{\statPCSessions}{401}
+\newcommand{\statPCCommits}{1{,}211}
+\newcommand{\statPCRepos}{23}
+\newcommand{\statPCDevelopers}{20}
+
+% ---- Part C: model-version heterogeneity within each tier label ----
+% GENERATED. Derived from the commit `model` trailers in company_sessions.json by
+% part_c_control_stats.py (["model_versions"]) and formatted by
+% generate_stats_macros.py. company_simulations.model_cell does the parsing, so the
+% "(1M context)" suffix collapses onto its base version -- the same model at a
+% longer context window, not a separate capability level. Finding 2's tier contrast
+% pools within each bin, so its within-bin capability spread is uncontrolled; these
+% counts are what the paper cites as the size of that pooling.
+\newcommand{\statPCOpusVersions}{five}
+\newcommand{\statPCSonnetVersions}{three}
+\newcommand{\statPCOpusTrailers}{eight}
+\newcommand{\statPCSonnetTrailers}{four}
+\newcommand{\statPCVersionSpan}{generations~4.5 through~5 in both families}
+
+% ---- Part C: Finding 1 — churn convergence ----
+\newcommand{\statPCDecayPct}{70.0\%}
+\newcommand{\statPCMedianRatio}{0.49}
+\newcommand{\statPCPermCI}{$[0.400, \, 0.793]$}
+\newcommand{\statPCPermP}{{<}0.0001}
+\newcommand{\statPCPermN}{70}
+
+% ---- Part C: Finding 2 — model-capability gap (null) ----
+\newcommand{\statPCTauOpus}{0.55}
+\newcommand{\statPCTauSonnet}{0.55}
+\newcommand{\statPCNOpus}{158}
+\newcommand{\statPCNSonnet}{177}
+\newcommand{\statPCGap}{{-}0.003}
+\newcommand{\statPCGapCI}{$[{-}0.075, \, {+}0.069]$}
+\newcommand{\statPCGapPermP}{0.93}
+\newcommand{\statPCGapMWUP}{0.91}
+\newcommand{\statPCEvaluePoint}{1.10}
+\newcommand{\statPCEvalueCI}{1.00}
+\newcommand{\statPCStratGap}{{+}0.002}
+\newcommand{\statPCStratP}{0.96}
+\newcommand{\statPCStrata}{4}
+\newcommand{\statPCChurnRhoOpus}{0.80}
+\newcommand{\statPCChurnRhoSonnet}{0.75}
+\newcommand{\statPCChurnGap}{0.043}
+\newcommand{\statPCChurnGapP}{0.54}
+\newcommand{\statPCChurnGapN}{123}
+\newcommand{\statPCMultilevelCoef}{{+}0.009}
+\newcommand{\statPCMultilevelCI}{$[{-}0.070, \, {+}0.088]$}
+\newcommand{\statPCMultilevelP}{0.82}
+\newcommand{\statPCVarRepo}{0.132}
+\newcommand{\statPCVarDev}{0.062}
+
+% ---- Part C: Finding 3 — geometric churn-decay model ----
+\newcommand{\statPCRho}{0.77}
+\newcommand{\statPCRhoCI}{$[0.65, \, 0.92]$}
+\newcommand{\statPCSigma}{2.39}
+\newcommand{\statPCSigmaCI}{$[2.24, \, 2.54]$}
+\newcommand{\statPCPiPure}{0.071}
+\newcommand{\statPCTrainN}{137}
+\newcommand{\statPCTestN}{60}
+\newcommand{\statPCKSHeldout}{0.18}
+\newcommand{\statPCKSHeldoutP}{0.045}
+% Held-out KS is seed-sensitive with the expanded sample: across 8 train/test
+% seeds p ranges [0.0003, 0.44], rejecting at alpha=0.05 in 6/8 splits — no
+% longer the clean non-rejection reported on the smaller (378-session) sample.
+\newcommand{\statPCKSHeldoutSeedRange}{$[0.0003, \, 0.44]$, rejecting in 6/8 seeds}
+\newcommand{\statPCKSInsample}{0.21}
+\newcommand{\statPCKSInsampleP}{{<}0.0001}
+
+% ---- Part C: Finding 4 — session length ----
+\newcommand{\statPCMedianLen}{1}
+\newcommand{\statPCMeanLen}{3.0}
+\newcommand{\statPCMaxLen}{45}
+\newcommand{\statPCSingleCommitPct}{50.9\%}
+
+% ---- Part C: robustness check — pre-AI-adoption human baseline ----
+% Cutoff derived 2026-08-12 from the earliest AI-co-author-trailer commit
+% found anywhere in the org's repos (2025-09-18), minus a 3-year safety
+% margin. Window length (315 days) matches the AI-tier data's own
+% observation span, ending at the cutoff. Repos are a disjoint, older cohort
+% from the 23 AI-tier repos (excluded by construction), not a repo-matched
+% comparison — see caveats in the surrounding text.
+% Developer identity is heuristically deduplicated (git author-name/email
+% aliasing is confirmed common in this org's history: GitHub-noreply
+% handles, contractor accounts, work/personal email pairs — see
+% scripts/resolve_author_aliases.py) rather than a validated headcount; the
+% prose deliberately does not assert the raw number as exact.
+\newcommand{\statPCCtrlSince}{2021-11-08}
+\newcommand{\statPCCtrlUntil}{2022-09-19}
+\newcommand{\statPCCtrlRepos}{122}
+\newcommand{\statPCCtrlDevelopers}{62}
+\newcommand{\statPCCtrlSessions}{9{,}395}
+\newcommand{\statPCCtrlCommits}{17{,}694}
+\newcommand{\statPCCtrlTau}{0.39}
+\newcommand{\statPCCtrlRho}{0.86}
+\newcommand{\statPCCtrlRhoCI}{$[0.82, \, 0.91]$}
+% Session-length composition. The control cohort is far more singleton-heavy than
+% the AI tier, so the survivor-ratio gap is also reported restricted to
+% multi-commit sessions -- see the robustness-check paragraph.
+\newcommand{\statPCCtrlSingleCommitPct}{63.9\%}
+\newcommand{\statPCCtrlTauMulti}{0.435}
+\newcommand{\statPCTauMulti}{0.593}
+\newcommand{\statPCCtrlGapOpus}{{-}0.160}
+\newcommand{\statPCCtrlGapOpusP}{{<}0.0002}
+\newcommand{\statPCCtrlGapSonnet}{{-}0.163}
+\newcommand{\statPCCtrlGapSonnetP}{{<}0.0002}
+\newcommand{\statPCCtrlMLOpusCoef}{{+}0.145}
+\newcommand{\statPCCtrlMLOpusP}{0.00082}
+\newcommand{\statPCCtrlMLSonnetCoef}{{+}0.154}
+\newcommand{\statPCCtrlMLSonnetP}{0.00026}
+
+% ---- Part C: release footprint (Responsible Use Statement) ----
+% Distinct people appearing anywhere in the four published datasets. Strictly
+% more than \statPCCtrlDevelopers, which counts only the pre-AI control roster:
+% the AI-era cohorts contain people the control window never saw. The privacy
+% claim is about everyone in the release, so it must not reuse the control count.
+\newcommand{\statPCReleasedDevelopers}{71}
+\newcommand{\statPCReleasedDatasets}{four}
+
+% ---- Part C: tier composition of the AI-tier cohort ----
+% Opus and Sonnet do not exhaust the cohort. A small Haiku residue and a few
+% sessions whose trailer does not resolve sit outside Finding 2's contrast, and
+% the appendix's capability scale ranks the Haiku cell, so the main text names
+% them rather than implying only two tiers are present.
+\newcommand{\statPCHaikuSessions}{9}
+\newcommand{\statPCUnresolvedSessions}{5}
+\newcommand{\statPCTierExcluded}{14}
+% Resamples behind every Part C permutation test. Quoted wherever a p-value sits at
+% the two-sided resolution floor 2/(reps+1), so "p < 0.0002" reads as "no resample
+% reached the observation" rather than as an estimate that happens to be small.
+\newcommand{\statPCPermReps}{9{,}999}
+
+% ---- Part C: within-era AI-vs-non-AI contrast ----
+% The one design free of BOTH the person confound (same developers on both sides)
+% and the era confound (same window, codebase, tooling). Split only on whether a
+% commit carries a Claude trailer, so what remains uncontrolled is task selection.
+% All values from data/part_c_control_stats.json ["within_era"].
+\newcommand{\statPCWithinSince}{2025-09-18}
+\newcommand{\statPCWithinUntil}{2026-12-31}
+\newcommand{\statPCWithinAISessions}{487}
+\newcommand{\statPCWithinAICommits}{1{,}493}
+\newcommand{\statPCWithinNonAISessions}{1{,}874}
+\newcommand{\statPCWithinNonAICommits}{4{,}914}
+\newcommand{\statPCWithinDevelopers}{22}
+\newcommand{\statPCWithinTauAI}{0.540}
+\newcommand{\statPCWithinTauNonAI}{0.419}
+% Paired within developer, at four commit floors. Eight tests in total (two
+% statistics x four floors); the floor labels are the min_commits_per_side the
+% pairing was run at. Renaming a floor breaks the macro lookup loudly rather than
+% silently retargeting a row, since patch_macros raises on a missing macro.
+\newcommand{\statPCWithinFloorB}{15}
+\newcommand{\statPCWithinFloorC}{30}
+\newcommand{\statPCWithinFloorD}{50}
+\newcommand{\statPCWithinFZeroPairs}{21}
+\newcommand{\statPCWithinFZeroHigher}{14}
+\newcommand{\statPCWithinFZeroSignP}{0.19}
+\newcommand{\statPCWithinFZeroWilcoxP}{0.022}
+\newcommand{\statPCWithinFZeroMedian}{{+}0.127}
+\newcommand{\statPCWithinFBPairs}{14}
+\newcommand{\statPCWithinFBHigher}{10}
+\newcommand{\statPCWithinFBSignP}{0.18}
+\newcommand{\statPCWithinFBWilcoxP}{0.011}
+\newcommand{\statPCWithinFBMedian}{{+}0.094}
+\newcommand{\statPCWithinFCPairs}{9}
+\newcommand{\statPCWithinFCHigher}{6}
+\newcommand{\statPCWithinFCSignP}{0.51}
+\newcommand{\statPCWithinFCWilcoxP}{0.098}
+\newcommand{\statPCWithinFCMedian}{{+}0.061}
+\newcommand{\statPCWithinFDPairs}{7}
+\newcommand{\statPCWithinFDHigher}{5}
+\newcommand{\statPCWithinFDSignP}{0.45}
+\newcommand{\statPCWithinFDWilcoxP}{0.11}
+\newcommand{\statPCWithinFDMedian}{{+}0.127}
+% The signed spread at the >=15 floor. This is what Wilcoxon is reacting to and the
+% sign test is not: quoting the significant p-value without it would hide which
+% assumption carries the result.
+\newcommand{\statPCWithinFBDeltaMin}{{-}0.078}
+\newcommand{\statPCWithinFBDeltaMax}{{+}0.332}
+% Best-measured pair (most commits on BOTH sides), so "the direction is not an
+% artifact of thin data" is checkable rather than asserted.
+\newcommand{\statPCWithinTopVolNonAI}{1{,}340}
+\newcommand{\statPCWithinTopVolAI}{444}
+\newcommand{\statPCWithinTopVolDelta}{{+}0.127}
+
+% ---- Part C: pre-AI within-developer pairing ----
+% Cuts AGAINST the between-group human-vs-AI gap and is reported that way. From
+% ["paired_within_developer"]; floor 0 and the >=50 floor only.
+\newcommand{\statPCPairedPairs}{12}
+\newcommand{\statPCPairedHigher}{9}
+\newcommand{\statPCPairedSignP}{0.15}
+\newcommand{\statPCPairedWilcoxP}{0.034}
+\newcommand{\statPCPairedMedian}{{+}0.117}
+\newcommand{\statPCPairedFloorD}{50}
+\newcommand{\statPCPairedFDPairs}{4}
+\newcommand{\statPCPairedFDHigher}{2}
+\newcommand{\statPCPairedFDSignP}{1}
+\newcommand{\statPCPairedFDMedian}{{+}0.017}
+% Best-measured pair, and the worst inclusion asymmetry. The control keeps all of a
+% person's commits while the AI tier keeps only their Claude-co-authored ones, so a
+% large ratio means low adoption, not collapsed output.
+\newcommand{\statPCPairedTopVolCtrl}{322}
+\newcommand{\statPCPairedTopVolAI}{257}
+\newcommand{\statPCPairedTopVolDelta}{{+}0.320}
+\newcommand{\statPCPairedMaxRatio}{33}
+
+% ---- Part C: capability-ordered re-test of Finding 2 ----
+% Finding 2's tier contrast pools model versions, which would attenuate a real gap.
+% This re-tests it as a monotone trend over an ordered capability scale, under two
+% orderings (each the other's sensitivity analysis). From ["capability"].
+\newcommand{\statPCCapSessions}{343}
+\newcommand{\statPCCapCells}{8}
+\newcommand{\statPCCapSteps}{7}
+% Cell composition. The cell total coincides with the pooled-version total quoted
+% beside it (five Opus + three Sonnet versions, eight cells), so a reader reconstructs
+% "the cells are the Opus and Sonnet versions" and is wrong twice: one Opus version is
+% the plurality cell of no session, and Haiku contributes a cell the tier contrast
+% never sees. Stated explicitly for that reason.
+\newcommand{\statPCCapCellsOpus}{four}
+\newcommand{\statPCCapCellsSonnet}{three}
+\newcommand{\statPCCapCellsHaiku}{one}
+\newcommand{\statPCCapAbsentOpusVersion}{5}
+\newcommand{\statPCCapFamilyRho}{{+}0.012}
+\newcommand{\statPCCapFamilyP}{0.82}
+\newcommand{\statPCCapFamilyCoef}{{+}0.003}
+\newcommand{\statPCCapFamilyCoefP}{0.75}
+\newcommand{\statPCCapFamilyCI}{$[{-}0.016, \, {+}0.022]$}
+\newcommand{\statPCCapVersionRho}{{-}0.008}
+\newcommand{\statPCCapVersionP}{0.88}
+\newcommand{\statPCCapVersionCoef}{{-}0.011}
+\newcommand{\statPCCapVersionCoefP}{0.38}
+\newcommand{\statPCCapVersionCI}{$[{-}0.036, \, {+}0.014]$}
+% The widest total swing the adjusted CI still permits across all rank steps. The
+% null is BOUNDED, not tight: compare this against the human-vs-AI gap.
+\newcommand{\statPCCapSwing}{0.155}
+% Per-cell taus are not monotone in either ordering, which is why rho sits near
+% zero. The Haiku cell rests on very few sessions.
+\newcommand{\statPCCapTauSonnetMid}{0.569}
+\newcommand{\statPCCapTauSonnetNew}{0.446}
+\newcommand{\statPCCapTauHaiku}{0.352}
+\newcommand{\statPCCapNHaiku}{8}

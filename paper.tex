@@ -1,0 +1,291 @@
+\documentclass{article}
+
+% Real NeurIPS 2026 style file (fetched from
+% https://media.neurips.cc/Conferences/NeurIPS2026/Formatting_Instructions_For_NeurIPS_2026.zip,
+% linked from the "Paper template" entry on https://neurips.cc/Conferences/2026/CallForPapers).
+% [preprint] is the de-anonymized public build: real author block, no line
+% numbers, and a "Preprint." footer that stays true whatever the workshop
+% decides. It was submitted under [dblblindworkshop] (anonymized title block,
+% auto-hidden ack env); a camera-ready copy would use [dblblindworkshop,final],
+% which labels the footer with \workshoptitle{} instead.
+\usepackage[preprint]{neurips_2026}
+\workshoptitle{Managing Agents that Manage Agents}
+
+% Math and graphics
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{xcolor}
+\usepackage{natbib}
+
+% hyperref must load LAST. The algorithm package redefines LaTeX's float
+% internals, so loading hyperref before it emits a second PDF anchor for
+% every float: "destination with the same identifier (name{figure.1}) has
+% been already used, duplicate ignored" for Tables 1-3 and Figures 1-5,
+% leaving those cross-reference links pointing at an arbitrary one of the
+% two anchors. Loading it here clears all 12 warnings with no pagination
+% change. (The main body ends on p. 9; an earlier version of this comment
+% said p. 11, which was two pages stale.)
+\usepackage{hyperref}
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\theoremstyle{plain}
+
+\renewcommand{\qedsymbol}{$\blacksquare$}
+
+% Custom commands
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\Hyp}{\mathcal{H}}
+\newcommand{\sign}{\mathrm{sign}}
+\newcommand{\err}{\mathrm{err}}
+
+% Shared headline-statistics macros (single source of truth for main + appendix)
+\input{stats_macros}
+
+% Titled for what the paper delivers. An earlier version promised "A Checkable
+% Criterion", which S1 then had to walk back to "checkable via the scaffold-immutability
+% proxy of S6, not a general estimator for the hypothesis class, which we lack" -- a
+% title the paper's own second paragraph retracts. The boosting lens is where the
+% criterion and its vocabulary come from (S3) and it stays load-bearing in the body; it
+% is simply not what a reader should carry away.
+\title{Audit the Scaffold, Not the Checkpoint:\\
+A Stationarity Dichotomy for Recursive Self-Improvement in Agentic Coding}
+
+\author{
+  Sebastian Bobadilla-Suarez\thanks{Corresponding author.} \\
+  OnCorps \\
+  \texttt{sebastian.suarez@oncorps.io} \\
+  \And
+  Bob Suh \\
+  OnCorps \\
+  \texttt{bob@oncorps.io} \\
+  \And
+  Ryan Fortin \\
+  OnCorps \\
+  \texttt{ryan@oncorps.io} \\
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+An auditor who checks whether a system's weights are frozen is checking the wrong thing. Our \emph{stationarity dichotomy} says that iterative self-modification hits strict diminishing returns whenever the agent's reachable set of edits stays fixed, and can escape only if that set expands. Rewriting scaffolding---tools, verifiers, decomposition---expands what an agent reaches without touching a weight, so frozen weights buy an \emph{eventual} ceiling but no stationarity along the way. The criterion also separates three regimes usually merged: search within a fixed class, test-time \emph{training} that raises the ceiling itself, and scaffold rewriting between them. Audit the scaffold, not the checkpoint.
+
+The same ceiling binds sideways. Best-of-$k$ orchestration realizes the best worker's ceiling \emph{exactly}: width buys rate, not budget. Re-consulting a fixed pool has a horizon computable in advance, decided by the pool alone, and the one arrangement that would beat it, a weighted vote, needs diversity real workers lack: on \statPBOverlapK\ same-family workers the failure overlap sits at its maximum, and a majority fails \statPBOverlapViolate\ of tasks.
+
+We obtain the criterion by reading refinement as gradient boosting on the \emph{residual error} between draft and target, a patch or git diff, and then measuring where that reading breaks: patches compose instead of standing beside each other to be voted on, and failures overlap. What we measure is saturation. Per-round improvement decays toward zero on SWE-bench, and churn decays geometrically across \statPCSessions\ production sessions, a shape \emph{shared} with a pre-AI human baseline that establishes the regime without identifying its cause. Both breaks are engineering choices rather than laws about code, so together they specify a harness worth building.
+\end{abstract}
+
+%% ============================================================
+\section{Introduction}
+\label{sec:intro}
+
+Individual LLM calls remain \emph{weak} in a precise sense: they make errors and struggle with complex, multi-step reasoning. A growing practice addresses this by deploying \emph{multiple agents} that iteratively generate, critique, and refine code---\emph{agentic coding}. The stakes of formalizing that practice are no longer speculative. Anthropic reports that more than 80\% of the code merged into its own production codebase was authored by Claude as of May 2026, up from low single digits before its coding-agent preview launched in February 2025. Engineers increasingly supply the goal rather than the method \citep{anthropic2026aibuildsitself}. At that scale, agentic coding also becomes a tangible microcosm for the mechanics of AI recursive self-improvement (RSI) \citep{good1965speculations, bostrom2014superintelligence}. Yet the practice lacks a rigorous mathematical foundation: how many agents to use, how to formulate patches, and when to stop refining are all largely ad hoc. This paper asks: \emph{when does iterative self-modification run out of room, and is a frozen checkpoint evidence that it has?}
+
+The answer is a structural dichotomy (\S\ref{sec:theory}) and not a tunable threshold: RSI saturates whenever the agent's reachable set of edits stays fixed, and can run away only if that set keeps expanding. So \emph{frozen weights are not by themselves sufficient} for the bounded regime, and the object to audit is the scaffold (\S\ref{sec:discussion}); whether real systems occupy that bounded regime is a statistical question Parts~B--C test. We reach the criterion by reading refinement as gradient boosting on the residual error, then measuring where the reading breaks. Each agent \emph{refines} an existing draft, predicting the residual between current code and target; it does not \emph{generate} one from scratch, and that is what makes the process functional gradient descent. Deployed loops then fail two of boosting's defining preconditions, and we measure those failures instead of assuming them away (\S\ref{sec:framework}). Two scope limits up front. The criterion is checkable only through a scaffold-immutability proxy, not a general estimator for the hypothesis class, which we lack; and the production dynamics are \emph{consistent with} the bounded regime without establishing that a fixed hypothesis class \emph{causes} them (\S\ref{sec:partC}). Within those limits, what follows is a criterion, not a convergence rate.
+
+\paragraph{Contributions.}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+    \item \textbf{Audit the scaffold, not the checkpoint.} The \emph{refinement game} yields monotone improvement with saturation (Thm.~\ref{thm:refinement}) and a \emph{stationarity dichotomy} (Prop.~\ref{prop:dichotomy}): strict diminishing returns whenever the reachable edit set stays fixed. Since rewriting scaffolding expands that set without touching a weight, frozen weights buy an eventual ceiling but no stationarity along the way (Cor.~\ref{cor:frozen-ceiling}). Expansion is necessary but not sufficient for escape, so the diagnostic over-flags by construction. Saturation is measured on both sides: on SWE-bench, and across \statPCSessions\ production sessions against a \statPCCtrlSessions-session pre-AI baseline (\S\ref{sec:partB}, \S\ref{sec:partC}).
+    \item \textbf{The same ceiling binds sideways.} Best-of-$k$ orchestration realizes the best worker's ceiling \emph{exactly} (Prop.~\ref{prop:orchestration}), and the weighted vote that would beat it needs diversity real workers lack. On our pool---same-family workers, so this settles only the pessimistic half---failure overlap sits at its maximum: some task defeats every worker, and a majority fails \statPBOverlapViolate\ of tasks, which by Prop.~\ref{prop:diversity} \emph{is} the vote's error. Re-consulting that pool is bounded separately, and \emph{computably}: either some nonnegative combination of it already fits the work, in which case the edge survives every round, or the edge hypothesis fails by round $\log(1/\epsilon_0)/2\gamma^2$, uniformly over the schedule, where $\epsilon_0$ is the best error any nonnegative combination achieves and $\gamma$ the per-round edge (Prop.~\ref{prop:pool-dichotomy}, \S\ref{sec:theory}, Appendix~\ref{app:orchestration}).
+    \item \textbf{Where deployed loops break boosting.} They fail its preconditions in two places we locate and measure. Neither is a law about code; both are engineering choices, so read prescriptively they specify a harness---unbuilt, ours included---precisely enough to build from (\S\ref{sec:framework}, open problem~1).
+\end{itemize}
+
+%% ============================================================
+\section{Related Work}
+\label{sec:related}
+
+AdaBoost \citep{freund1997decision} and its margin-based generalization \citep{schapire1998boosting, schapire2013explaining} underwrite our theoretical results. Boosting as functional gradient descent \citep{mason2000boosting, friedman2001greedy} underwrites the residual-as-patch mapping, and the specification-to-code map is an instance of structured prediction \citep{tsochantaridis2005large}. The ``intelligence explosion'' \citep{good1965speculations, bostrom2014superintelligence} and the G\"odel machine \citep{schmidhuber2003goedel} motivate the RSI reading. Code-level self-improvement is precisely the regime our frozen-weight ceiling addresses: STOP \citep{zelikman2023stop}, FunSearch \citep{romeraparedes2024funsearch}, and the Darwin G\"odel Machine \citep{zhang2025darwin}, which rewrites its own scaffold with frozen weights. The harness itself is increasingly argued to be a separately-optimizable layer \citep{he2026harness}. Concurrent work pushes that axis to its limit: \citet{xue2026rethinking} let a frontier model compose its own improvement process online, which is frozen-weight scaffold expansion in close to its purest form, and find it beats staged and reflective-evolutionary pipelines \citep{agrawal2025gepa} with a strong optimizer but \emph{loses} with a medium one. Under Cor.~\ref{cor:frozen-ceiling} that is the expected shape, since scaffold expansion pays only as far as the frozen checkpoint allows. A recent survey taxonomizes RSI along the same axis, convergent \emph{bounded self-refinement} vs.\ \emph{open-ended} RSI \citep{chen2026recursive}, and our dichotomy (Prop.~\ref{prop:dichotomy}) gives that split a structural cause. Empirical multi-agent and self-refinement systems, and the test-time-compute scaling literature whose diminishing returns our refinement game predicts from first principles, are surveyed in Appendix~\ref{app:related}.
+
+One quantity needs separating from a nearby one, since our overlap result would otherwise read as known. Repeated sampling measures \emph{coverage}, whether \emph{any} of $k$ samples solves a task, and coverage keeps growing with $k$ \citep{brown2024monkeys}. That is a statement about an oracle verifier's reach: it presumes something can identify the good sample after the fact. Prop.~\ref{prop:diversity} governs the different quantity an orchestrator is left with when no such verifier exists: the \emph{majority vote's} error. And $m^\star{=}k$ says the tasks a vote cannot recover are exactly those every worker fails. Growing coverage and a failing vote are therefore consistent, and it is the second that binds verifier-free orchestration. Cross-family aggregation is where the optimistic half would be settled, and the existing cross-vendor aggregators \citep{wang2024mixtureofagents, jiang2023llmblender} report end-to-end gains without reporting the overlap statistic Prop.~\ref{prop:diversity} makes decisive (open problem~2).
+
+The dichotomy also separates three cases the test-time-scaling literature often merges: inference compute searches within a class the weights and scaffold already fix; test-time \emph{training} \citep{sun2019testtime, hardt2023nearest, sun2024learning, akyurek2024testtime, hubotter2024efficiently} raises the ceiling itself, as does letting the model's own generated edits drive the update \citep{zweiger2025seal}; and between them sits this paper's case, rewriting the scaffold with weights frozen. That separation is ours, and it matters: an auditor who checks only whether weights are frozen catches test-time training and misses scaffold expansion entirely (Appendix~\ref{app:rsi}).
+
+%% ============================================================
+\section{Framework: Agentic Coding as Boosting}
+\label{sec:framework}
+
+A \emph{weak coding agent} predicts the \emph{residual error} between the current draft and the optimal target, naturally represented as a git diff. It does not generate the full file from scratch. Requiring the patch to improve the draft more often than not is stringent in code space: a random edit almost surely breaks a working program, so even a small positive edge already presupposes non-trivial program understanding, not mere pattern completion (Remark~\ref{rem:capability-threshold}). Two levels then come apart. The code \emph{artifact} evolves by \emph{sequential composition}: each patch applies on top of the current draft, so the process is order-dependent (the refinement game, Thm.~\ref{thm:refinement}). The boosting \emph{analysis} operates on an additive confidence margin $f(x) = \sum_t \alpha_t h_t(x)$, a weighted vote over specifications, and it is this margin, not the code bytes, that decays exponentially under the exponential loss (Thm.~\ref{thm:training-error}). Appendix~\ref{app:mapping} (Table~\ref{tab:mapping}) tabulates the mapping term by term, alongside the Protocol it implies.
+
+\paragraph{Finding: deployed loops compose where boosting retains, and their failures overlap.} \emph{Structurally}, a refinement loop \emph{composes} patches ($R_T\circ\cdots\circ R_1$) while AdaBoost \emph{retains} all $T$ learners and combines them by weighted vote, so each patch subsumes its predecessor instead of standing beside it: there is no additive margin for an implicit $\alpha_t$ to weight, and no reweighted distribution $D_t$ is maintained (two further structural gaps, and the objection that task decomposition might realize the protocol implicitly, in Appendix~\ref{app:decomposition}). \emph{Empirically}, worker failures are too correlated for the one boosting-exact arrangement to pay: the tight overlap sits at its ceiling, $m^\star{=}k$, measured in \S\ref{sec:theory}.
+
+\paragraph{Both breaks are engineering choices, so they specify a harness.} Algorithm~\ref{alg:boost} states what a loop would need for the transferred guarantees to hold by construction: retention of all $T$ proposals instead of an overwritten draft, an \emph{explicit distribution} $D_t$ over specifications reweighted toward those still failing, and diversity sufficient to push the majority-failure rate below one half. Prop.~\ref{prop:diversity} makes that last condition exact rather than merely sufficient (open problem~1, \S\ref{sec:discussion}). Weighted voting over a shared instance is already boosting-exact (\S\ref{sec:theory}); what deployed practice lacks is retention and diversity. So the measurement does not retire the mapping as a \emph{model} of agentic coding: it specifies the system that would satisfy it, one we do not build here and are not aware of anyone having built.
+
+\paragraph{What the framing buys.} It supplies the \emph{vocabulary} (edge, weak-learning threshold, effective hypothesis class) that makes ``will this run away?'' structural rather than metaphorical; it names the \emph{invariant to track}, the reachable class and its ceiling; and measuring where it fails produced the build specification above, Prop.~\ref{prop:diversity}, and Prop.~\ref{prop:pool-dichotomy}, none of which the criterion alone would have suggested.
+
+%% ============================================================
+\section{Theoretical Analysis}
+\label{sec:theory}
+
+The algebraic steps below are machine-checked in Lean~4 (Mathlib, no \texttt{axiom}, no \texttt{sorry}). The check earns its keep concretely, by \emph{refuting} a conjectured strict inequality in Prop.~\ref{prop:orchestration}, and it cannot reach what matters most: (M1), (M2), and the mapping itself remain modeling assumptions no proof discharges (Remark~\ref{rem:lean-honesty}).\footnote{The formalization is a quality-control layer against AI-hallucinated derivations rather than a contribution: this manuscript was drafted with AI assistance (Responsible Use Statement).} Full proofs are in Appendix~\ref{app:proofs}. Let $\X$ be the space of specifications and $\Y$ the space of code artifacts (a draft $z$, or the optimal target $y$), with a distribution $\D$ over $\X\times\Y$, and a loss $L:\Y\times\Y\to\mathbb{R}_{\ge0}$ (Table~\ref{tab:mapping}: e.g.\ token/AST edit distance).
+
+\begin{definition}[Weak Coding Agent]
+\label{def:weak-agent}
+A \emph{weak coding agent} proposes a patch via a \emph{refinement operator} $R_t:\Y\times\mathcal{A}\to\Y$, taking a draft $z$ and an edit $a\in\mathcal{A}$ to $z'=R_t(z,a)$; let $h_t(x)\in\{-1,+1\}$ indicate success on specification $x$, $h_t(x)=+1$ iff the draft returned matches the target, $L(y,z')=0$. Every label is $+1$ here, the target being solved by definition, so $\mathrm{err}_{\D}(h_t)=\Pr[h_t(x)={-}1]\le\tfrac12-\gamma_t$ and the appendix's generic $y_i$ reads as $+1$ throughout; $\Hyp$ is instantiated only in Theorem~\ref{thm:generalization}. This $\gamma_t$ is the edge on \emph{solving}, the one Thm.~\ref{thm:training-error} and Cor.~\ref{cor:convergence} require; Part~B measures the edge on \emph{improving} the previous draft, written $\tilde\gamma_t=\tfrac1N\sum_i\mathbf1[q_{i,t}>q_{i,t-1}]-\tfrac12$ on the pass fraction $q_{i,t}$ of task $i$ at round $t$, which scores a tie at ${-}\tfrac12$ under the strict $>$ (\S\ref{sec:partB}). The two need not agree, and which is reported shapes the headline.
+\end{definition}
+
+\paragraph{What survives when the Protocol's specifics are dropped.} The \emph{Agentic Boosting Protocol} (Def.~\ref{def:protocol}) is AdaBoost read over specifications, and three classical guarantees transfer verbatim under that reading (Thms.~\ref{thm:training-error}, \ref{thm:fsam}, \ref{thm:generalization}, Cor.~\ref{cor:convergence}). None is new and we rely on none: each needs a retained, reweighted ensemble that no deployed loop maintains, whatever its edge (Appendix~\ref{app:classical-statements}). The results below drop the Protocol's specifics entirely---real loops maintain neither $D_t$ nor $\alpha_t$---so we name the more general update they do perform and ask what guarantee survives. They hold with no mention of AdaBoost: Thm.~\ref{thm:refinement} and Prop.~\ref{prop:dichotomy} are boosting-\emph{independent}, and the framing supplies the vocabulary without supplying the necessity.
+
+\begin{theorem}[Monotone Improvement under Refinement]
+\label{thm:refinement}
+Write $z_t=R_t(z_{t-1},a_t^*)$ for the draft after round $t$ at that round's best action $a_t^*$, and suppose each $R_t$ satisfies the improvement property $\mathbb{E}_{y\sim\D(\cdot\mid x)}[V(R_t(z,a_t^*))]\ge V(z)+\eta_t$ for quality function $V:\Y\to[0,1]$ and $\eta_t>0$. Then $\mathbb{E}[V(z_T)]\ge V(z_0)+\sum_{t=1}^T\eta_t$, and since $V\le1$, the total improvement saturates: $\sum_{t=1}^\infty\eta_t\le1-V(z_0)$.
+\end{theorem}
+
+Thm.~\ref{thm:refinement} already implies diminishing returns (Cor.~\ref{cor:probabilistic-refinement} relaxes its expectation to a per-round tail bound), but leaves open what happens if the ceiling itself is not fixed; the following makes that condition precise---the paper's central checkable criterion.
+
+\begin{proposition}[Stationarity Dichotomy]
+\label{prop:dichotomy}
+Consider the refinement game of Thm.~\ref{thm:refinement}. (i)~\textbf{Fixed ceiling $\Rightarrow$ saturation.} If $V(z)\le B$ for all $z$, then $\sum_{t=1}^\infty\eta_t\le B-\mathbb{E}[V(z_0)]$, forcing $\eta_t\to0$: strict diminishing returns. (ii)~\textbf{Sustained edge $\Rightarrow$ divergence.} If the effective hypothesis class expands enough to sustain a uniform edge $\eta_t\ge c>0$, then $\mathbb{E}[V(z_T)]$ grows without bound and no fixed ceiling can hold.
+\end{proposition}
+
+Both parts are formally verified in Lean (\texttt{Proposition8.lean}) and are immediate consequences of Thm.~\ref{thm:refinement}. Part~(i) is the stationary regime a bounded quality metric enforces; part~(ii) is what an unbounded ``intelligence explosion'' would require.
+
+The proofs are elementary, a bounded-monotone-sequence argument and the Archimedean property, and that is the point. The claim is not that saturation was hard to prove but that \emph{the reachable class is the right thing to track}: posed that way the answer takes two lines, and the difficulty moves to the modelling assumptions, above all a bounded quality scale, which part~(i) needs and a genuinely open-ended objective would deny (Appendix~\ref{app:bounded-metrics}). The safety-relevant instantiation sets the class to what fixed weights can reach: can reachable edits expand without changing a weight?
+
+\begin{corollary}[Frozen-Weight Ceiling]
+\label{cor:frozen-ceiling}
+Model a self-improving system as $\mathcal{S}=(W,C)$, frozen weights $W$ and mutable scaffold $C$. Assume (M1)~\emph{class expandability}: the effective hypothesis class $\Hyp_t(C)$ can expand under a scaffold rewrite without altering $W$; and (M2)~\emph{ultimate ceiling}: $V(z)\le V^*(W)$ for all $z$ reachable by any scaffold the model can construct. Then (i)~the system saturates at a value no greater than $V^*(W)$ (Prop.~\ref{prop:dichotomy}(i) with $B=V^*(W)$); (ii)~escaping this ceiling requires raising $V^*(W)$ itself---modifying weights or architecture---not only rewriting the scaffold (contrapositive of Prop.~\ref{prop:dichotomy}(ii)).
+\end{corollary}
+
+Freezing $W$ therefore does \emph{not} by itself place a system in the safe, saturating regime, since (M1) permits $\Hyp_t(C)$ to expand while $W$ stays fixed; frozen weights guarantee only the \emph{eventual} ceiling of part~(i), not stationary behavior along the way. That asymmetry is the load-bearing content: given (M2), part~(ii) is close to definitional, and neither (M1) nor (M2) is a theorem. Both are explicit modeling assumptions (Remark~\ref{rem:lean-honesty}). The criterion also runs one way only, since Prop.~\ref{prop:dichotomy}(ii) needs a \emph{uniform} edge $\eta_t\ge c>0$: a scaffold that expands while its edge shrinks saturates anyway. Self-expansion is thus necessary for escape but not sufficient, and \emph{when} the escape clause bites is open. Appendix~\ref{app:rsi} works one instance, an agent whose test-isolation script persists across rounds, unlocking patches the previous configuration could not propose and so enlarging $\Hyp_t(C)$ with $W$ untouched. It also states where that boundary stops being sharp.
+
+\paragraph{Orchestration: the ceiling along the width axis.} The ceiling also binds when capability is added \emph{sideways}, which is the case an orchestrator faces: let $k$ frozen workers run under scaffolds $C_1,\dots,C_k$ (distinct prompts, tools, or specializations, possibly sharing weights), with $V^*(W,C_i):=\sup\{V(z):z\text{ reachable under }C_i\}$ worker $i$'s tight ceiling.
+
+\begin{proposition}[Orchestration Selects a Ceiling; It Does Not Raise One]
+\label{prop:orchestration}
+Best-of-$k$ selection attains $V^*_{\mathrm{orch}}=\max_i V^*(W,C_i)$ \emph{exactly}---an unconditional equality, holding even when no single worker's reachable class contains the union of all of them. Consulting all $k$ workers every round of the refinement game gives $\mathbb{E}[V(z_T)]\ge V(z_0)+\sum_{t=1}^T\max_i\eta_t^{(i)}$, dominating every worker's depth-only guarantee, yet since $V\le1$ the total improvement still saturates at $1-V(z_0)$: width buys rate, not budget. (The width half needs one hypothesis beyond Thm.~\ref{thm:refinement}'s---monotonicity of the inner action-expectation, since selection compares two integrands under the same expectation; Prop.~\ref{prop:width-refinement} states it and the formalization flags it.)
+\end{proposition}
+
+Orchestration therefore selects which existing ceiling to realize and reaches it sooner; it does not create a higher one. That makes ``reach for capability before orchestration'' a consequence rather than a heuristic. There is no strict regime for hard selection: both halves are Lean-checked (Appendix~\ref{app:orchestration}). We had conjectured a strict inequality, and Lean supplied the counterexample we had missed: two disjoint singleton classes with equal values.
+
+\paragraph{The diversity a vote would need is absent on real workers.} Weighted \emph{voting} is the one arrangement that escapes the ceiling, being boosting-exact, since workers answer the same instance and stand beside each other, so Thm.~\ref{thm:training-error} transfers verbatim with $t$ read as ``worker'' (Prop.~\ref{prop:soft-aggregation}). What it needs is diversity, and the requirement is an exact condition on a single integer.
+
+\begin{proposition}[Bounded Overlap Characterizes a Correct Vote]
+\label{prop:diversity}
+Let $k$ workers with $\pm1$ outputs be combined by the \emph{unweighted} majority vote, and let $m_i:=\#\{t<k:\,y_ih_t(x_i)={-}1\}$ count the workers that fail point $i$, with $m^\star:=\max_i m_i$ the \emph{tight overlap}. Then the vote has zero training error \emph{iff} $2m_i<k$ for every $i$---equivalently, iff $m^\star{<}k/2$. The condition is sharp in two senses: a single point at $2m_i{=}k$ already makes the error nonzero, and if \emph{every} point sits there the error is $1$.
+\end{proposition}
+
+Part~B's pool misses the bar at the extreme: at \emph{every} round $m^\star{=}k$, so some task defeats every worker, and a majority fails \statPBOverlapViolate\ of tasks, which \emph{is} the vote's error (\statPBOverlapVoteErr, 95\%~CI \statPBOverlapVoteErrCI). A statistic at its maximum needs no interval, which is why $m^\star{=}k$ decides the question on its own. The proposition itself is bookkeeping, since splitting the margin at $i$ gives $y_if(x_i)=k-2m_i$. The measurement carries the content, because it turns ``is this pool diverse enough to vote?'' into one countable integer. The error comparison settles nothing on its own. The vote's error does exceed the mean per-worker error \statPBOverlapEpsBar\ here, but the paired gap's interval includes zero (\statPBOverlapGap, 95\%~CI \statPBOverlapGapCI), and the excess does not survive restricting the pool to one capability tier, where $m^\star{=}k$ persists while the gap vanishes. Its sign is therefore an effect of pooling two tiers, not a fact about voting (Appendix~\ref{app:orchestration}).
+
+This is about as weak a diversity test as one could field, which cuts both ways. The workers are one vendor, two tiers and three prompt variants at temperature $0.25$, and the feedback-mode contrast is itself null (\S\ref{sec:partB}), so the pool's \emph{effective} diversity is nearer two configurations than \statPBOverlapArms. Low-temperature resampling of a single vendor is therefore close to a lower bound on diversity: it settles the pessimistic half, that resampling one model inherits its hard points, and cannot speak to the optimistic one. Whether genuinely different families clear the bar is the open question for anyone building a voting orchestrator, and this data cannot reach it (Appendix~\ref{app:orchestration}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.54\textwidth]{figures/llm_fig_overlap.pdf}
+\caption{Prop.~\ref{prop:diversity}'s overlap condition measured on $k{=}\statPBOverlapK$ workers (\statPBOverlapArms\ arms $\times$ \statPBSeeds\ seeds), shared \statPBK-task pool. \textbf{Left:} workers failing each task; the condition needs every task strictly left of the dashed $k/2$ line, so the red mass is the vote's error and the spike at $m_i{=}k$ is total overlap. \textbf{Right:} per round, vote error against mean per-worker error $\bar\epsilon$ and the Markov bound $2\bar\epsilon$.}
+\label{fig:llm-overlap}
+\end{figure}
+
+\paragraph{Re-consulting a fixed pool has a horizon fixed in advance.} Width and depth compose in practice, since an orchestrator consults its workers again each round, and how long that can pay is settled by one property of the pool: whether some nonnegative combination of its workers can already fit the work.
+
+\begin{proposition}[Reused-Pool Dichotomy]
+\label{prop:pool-dichotomy}
+Fix a pool of $k$ workers and run Algorithm~\ref{alg:boost} over it under any schedule at the optimal confidences, with every scheduled worker having edge $\gamma>0$ against the distribution current when it is used. Let $\epsilon_0$ be the smallest zero-one training error attained by any nonnegative combination of the pool. (i)~If $\epsilon_0>0$, then $\epsilon_0\le e^{-2\gamma^2T}$, hence $T\le\log(1/\epsilon_0)/2\gamma^2$---the edge hypothesis provably fails by a finite, computable round, uniformly over the schedule and the confidences, and depending on $k$ only through $\epsilon_0$. (ii)~If instead the pool interpolates ($\epsilon_0{=}0$) with margin $\theta$ at coefficient sum $S$, then for \emph{every} distribution some member has edge $\gamma{=}\theta/2S>0$, fixed \emph{before} the distribution is chosen, so the hypothesis survives every round of any run. The cases are exhaustive and mutually exclusive.
+\end{proposition}
+
+A fixed pool is therefore not a renewable resource: unless it can already fit the work, re-consulting it has a horizon set by $\epsilon_0$ and $\gamma$ rather than by whatever compute an orchestrator is willing to spend. And the quantity deciding which side of the dichotomy a pool falls on, its reachable cone, is once again a property of the scaffold rather than of any weight. Both halves are Lean-checked and stated with their exact hypotheses as Props.~\ref{prop:pool-horizon} and~\ref{prop:interpolating-pool}.
+
+%% ============================================================
+\section{Experiments}
+\label{sec:experiments}
+
+Three complementary parts. \textbf{Part A} is a \emph{stylized theoretical validation}, reported entirely in Appendix~\ref{app:parta}: decision stumps on SWE-bench TF-IDF features with synthetic labels, confirming the machinery is implemented correctly and claiming nothing about code or LLM behavior. \textbf{Part B} is a \emph{regime characterization}: a real coding agent as the weak learner over $K{=}\statPBK$ SWE-bench Lite tasks $\times$ \statPBSeeds\ seeds. \textbf{Part C} supplies the \emph{ecological} evidence: \statPCSessions\ production sessions, placing current practice in the bounded regime without identifying what causes it. All code, processed data, figure inputs, and the raw LLM response cache are in the supplementary repository.
+
+\subsection{Part B: LLM Agent Refinement on SWE-bench Lite}
+\label{sec:partB}
+
+We treat \emph{mini-swe-agent} \citep{yang2024sweagent} as the per-round weak learner, wrapped in a refinement outer loop of $T{=}\statPBRounds$ rounds, picked from pilot evidence that the edge collapses by round~1, over $K{=}\statPBK$ SWE-bench Lite tasks \citep{jimenez2023swe} $\times$ \statPBSeeds\ seeds, at generation temperature $0.25$. We cross feedback mode with model tier (Claude Sonnet, the stronger, vs.\ Claude Haiku~4.5, the weaker) in a $2\times3$ design ($\statPBTrajectories$ trajectories). Feedback mode is what each \emph{later} round is told about the agent's prior attempt: \textbf{independent} (no memory across rounds), \textbf{blind} (prior patch only, no critique), or \textbf{diagnostic} (prior patch plus which \texttt{FAIL\_TO\_PASS} tests still fail). No arm is shown the gold patch.
+
+Scoring is a digest-pinned Docker harness running \texttt{FAIL\_TO\_PASS}/\texttt{PASS\_TO\_PASS} under \texttt{pytest}---true binary pass/fail, not an LLM judge. The evaluator is ours rather than SWE-bench's own, and the reason matters for how to read the pool. A $T$-round loop needs per-round scoring inside a live container, which the official \emph{batch} harness does not expose, so we score \texttt{--junit-xml} directly. That much was necessary; scoring \emph{every} repository with \texttt{pytest} was not, since SWE-bench ships a per-repository test command that we reimplemented instead of importing. We audited the evaluator against the gold patch before trusting it, which is how we found the cost: applying the \emph{known-correct} patch to the originally-sampled $K{=}50$ pool left \statPBAuditFailN\ tasks failing deterministically across \statPBAuditRootCauses\ root causes in \emph{our} evaluator, each of which it would otherwise have scored as a model error. We fixed the two shared causes, re-verified against gold, and rebuilt to $K{=}\statPBK$, leaving a pool that is \texttt{pytest}-native by construction (Appendix~\ref{app:partb}).
+
+\paragraph{Results: the capability effect is real and large; the feedback-mode effect is an honestly underpowered null.} A $2\times3$ repeated-measures ANOVA (full table, Cohen's $f$ values and required-$K$ arithmetic in Appendix~\ref{app:partb}) is unambiguous on one effect and silent on the other two, silent meaning underpowered and not negative: model tier explains roughly half the variance ($F\statPBModelDf{=}\statPBModelF$, $p\statPBModelP$, partial $\eta^2{=}\statPBModelEta$), while neither feedback mode ($p{=}\statPBModeP$) nor the interaction ($p{=}\statPBInterP$) reaches significance. Solve rates tell the same story: Haiku \statPBHaikuSolveRange\ across arms against Sonnet \statPBSonnetSolveRange\ ($\ge\tau{=}0.6$ of a task's tests passing, 95\%~Wilson CI; per-arm rates in Appendix~\ref{app:partb}). A case-resampling bootstrap finds only $\statPBModePower$/$\statPBInterPower$ power (mode/interaction) at this $K$, and 80\% power needs \statPBPowerMultiple\ the current sample. \emph{This null is underpowered, not evidence of zero effect.}
+
+\paragraph{These are not SWE-bench resolve rates.} Our $\tau{=}0.6$ thresholds the \emph{fraction} of \texttt{FAIL\_TO\_PASS}/\texttt{PASS\_TO\_PASS} tests passing, so a task can count as solved here and as unresolved by SWE-bench's own criterion; do not read the rates above against published ones. At that criterion ($\tau{=}\statPBTauResolved$) the identical aggregation gives Haiku \statPBHaikuResolvedRange\ and Sonnet \statPBSonnetResolvedRange. The tier gap survives, neither tier sits at a floor, and the weak tier's mode ordering inverts (per-arm rates in Appendix~\ref{app:partb}), one more reason to read the mode contrast as noise. Nothing else moves with $\tau$ (Appendix~\ref{app:partb}). Absolute rates are also harness-specific, since excluding Django and SymPy leaves a pool plausibly easier than Lite as a whole. So the tier \emph{contrast} is the transportable result, and the selection is a property of our tooling rather than of the benchmark.
+
+\paragraph{Refinement goes idempotent, and most of the pooled edge is an artifact of that.} The loop stops calling the model on the round a task first passes and back-fills the rest with a hardcoded perfect score, so a solved trajectory contributes non-events rather than measurements, and each such cell enters $\tilde\gamma_t$ as a failure to improve. Pooled over all cells the estimator therefore tracks the solve rate as much as the dynamics, and tracks it \emph{backwards}: the stronger tier back-fills more rows and posts the more negative pooled edge. So we report that series for disclosure only and rely on cells where a model call happened. Nothing downstream turns on it, since neither Thm.~\ref{thm:refinement} nor Prop.~\ref{prop:dichotomy} ever required a positive edge (pooled values, intervals, and drafting history in Appendix~\ref{app:edge-decomposition}).
+
+On those cells the tiers separate cleanly (Appendix Fig.~\ref{fig:llm-edge}, left): Haiku \statPBHaikuEdgeHeadroom\ on \statPBHaikuHeadroomN\ rows, Sonnet \statPBSonnetEdgeHeadroom\ on \statPBSonnetHeadroomN\ (intervals in Appendix~\ref{app:edge-decomposition}). The weak tier fails to improve tasks it still could; the strong tier's first two intervals \emph{include zero}, so we do not claim it fails the weak-learning condition. What the data show is a loop that acts ever less often rather than one that acts wrongly: ties at \statPBTieRange\ of transitions overall, \statPBSonnetGenuineTieRange\ (Sonnet) and \statPBHaikuGenuineTieRange\ (Haiku) net of back-filling, against at most \statPBRegressMax\ lowering quality. An unchanged round is an \emph{abstention}, and \citet{schapire1999improved}'s confidence-rated bound charges $Z_t=\omega_0+2\sqrt{\omega_+\omega_-}<1$ rather than an error, the $\omega$'s being the abstained, correct and incorrect weight masses, so the transferred product bound still descends, to \statPBHaikuAbstainZ\ and \statPBSonnetAbstainZ\ over three rounds (Appendix Fig.~\ref{fig:llm-edge}, right).
+
+What places Part~B in bounded regime~(i) is the refinement game's own quantity, which back-filling cannot distort because a solved row can no longer improve: mean per-round improvement on the running best falls \statPBHaikuEta\ (Haiku) and \statPBSonnetEta\ (Sonnet). Improvement continues and shrinks toward zero. That is Thm.~\ref{thm:refinement}'s saturation measured rather than argued, and the reason a negative $\tilde\gamma_t$ is compatible with a still-improving artifact. Two limits bound this: conditioning on ``still live'' shrinks and hardens the population with $t$ (\S\ref{sec:limitations}), and this is one vendor's two tiers, one harness, one benchmark, $T{=}\statPBRounds$ rounds.
+
+\subsection{Part C: Refinement Dynamics in Production Agentic Coding}
+\label{sec:partC}
+
+\statPCSessions\ real sessions of AI-assisted software development at an enterprise software company. Unlike SWE-bench, production sessions are not curated to be near-solved. They carry genuine residual work, the headroom the theory requires. We extract structural git metrics only, retaining no code content, file paths, commit messages, or author identities. A \emph{session} is a run of consecutive AI-authored commits with an inter-commit gap below 4~hours: \statPCSessions\ sessions, \statPCCommits\ commits, \statPCRepos\ repositories. Construction, the tier-label caveats, and all five findings in full are in Appendix~\ref{app:partc}.
+
+\paragraph{Finding 1: churn converges. Findings 2--3: what that does and does not show.} \statPCDecayPct\ of multi-commit sessions show decreasing churn across commits, at a median late/early churn ratio of \statPCMedianRatio\ (95\%~CI \statPCPermCI; Appendix Fig.~\ref{fig:emp}, left). The ordering is genuinely temporal, not an artifact of which commits happen to be large (commit-order permutation test, $p\statPCPermP$, on the $n{=}\statPCPermN$ sessions of ${\ge}5$ commits, half the cohort being a single commit). That is the safety-relevant descriptive claim: current frozen-weight agentic coding sits in bounded regime~(i), refining like a saturating editor rather than compounding like a runaway process.
+
+It is not the mechanism, and two results say why. First, we ran the control that could falsify an AI-specific reading: a pre-AI human baseline of \statPCCtrlSessions\ sessions shows the same decay \emph{shape} (geometric churn-decay factor $\rho_{\mathrm{human}}{=}\statPCCtrlRho$ against AI-tier $\rho{\approx}\statPCRho$). Geometric front-loading is therefore not AI-specific, and a fixed reachable class is not needed to predict it. Second, the one theory-specific discriminator returns a null: Opus sessions show no higher survivor ratio $\psi$ (net lines over total churn) than Sonnet ones ($\psi_{\mathrm{Opus}}{\approx}\statPCTauOpus$, $n{=}\statPCNOpus$ vs.\ $\psi_{\mathrm{Sonnet}}{\approx}\statPCTauSonnet$, $n{=}\statPCNSonnet$; gap${=}\statPCGap$, 95\%~CI \statPCGapCI, permutation $p{=}\statPCGapPermP$; Appendix Fig.~\ref{fig:emp}, right), and it survives four de-confounding checks and a re-test on version-resolved capability cells. Since Part~B measures a large capability effect on the same kind of contrast, we read the null as a fact about the proxy rather than about the models. It is a \emph{bounded} null, not a demonstrated zero. That costs Finding~2 its force as a mechanism test, and leaves Finding~1's description intact.
+
+%% ============================================================
+\section{Discussion}
+\label{sec:discussion}
+
+Two practitioner lessons follow from the saturation bound (Thm.~\ref{thm:refinement}), with all five in Appendix~\ref{app:guidance}: \textbf{(1)~spend on the first attempt, not the refinement loop}, since later rounds mostly leave the artifact untouched (Appendix Fig.~\ref{fig:llm-edge}); and \textbf{(2)~reach for capability before orchestration}, since orchestration cannot exceed the best worker's ceiling (Prop.~\ref{prop:orchestration}) and the capability gap dominated every factor we varied (partial $\eta^2{=}\statPBModelEta$).
+
+The governance reading: the quantity to monitor is not whether weights are frozen \citep{anthropic2026rsp, deepmind2026fsf, openai2025preparedness} but whether the \emph{scaffold} is self-expanding. A loop that only re-samples is bounded by construction; one that rewrites its tools or decomposition is not (M1, Cor.~\ref{cor:frozen-ceiling}). That self-expansion doubles as a reward-hacking risk, since a system licensed to rewrite its own tests may exploit $L(Y,\hat Y)$ rather than improve (Appendix~\ref{app:rsi}--\ref{app:bounded-metrics}).
+
+\paragraph{Open problems.} Each is falsifiable, and blocked by something we did not do rather than something we found. \textbf{(1)~Build the harness} with retention, an explicit distribution over specifications, and enforced $m^\star{<}k/2$ (\S\ref{sec:framework}): does a loop satisfying all three descend at the transferred rate, or does a further gap appear only on contact? \textbf{(2)~Run the vote across model families}: does an ensemble drawn from genuinely different vendors satisfy Prop.~\ref{prop:diversity}? The existing cross-vendor aggregators report end-to-end gains but not $m^\star$ (\S\ref{sec:related}), so the measurement is cheap and unmade. If they fail it, weighted-vote orchestration has no viable regime on real code. \textbf{(3)~Keep refining after the first pass}: no unconditional per-round edge is estimable from data whose later rounds were never run, and one re-run that declines to stop on success settles it. \textbf{(4)~Hold weights fixed and vary the scaffold}, the only design separating a genuinely fixed reachable class from the ordinary economics of editing, which is exactly what Part~C's human baseline leaves open.
+
+\subsection{Limitations}
+\label{sec:limitations}
+
+Ordered by what they could cost: the two below could each overturn a claim we make; the seven in Appendix~\ref{app:limitations} bound scope without threatening a specific result.
+
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+    \item \textbf{What the edge measurement can and cannot settle (critical caveat).} We have no clean unconditional estimate of the per-round edge and cannot get one from this data: the harness stops calling the model once a task passes, so the rounds that would supply the missing cells were never run (\S\ref{sec:partB}). What we report conditions on a task still being live, so the population shrinks and hardens with $t$ (Sonnet \statPBSonnetHeadroomN) and part of the decline is a change of subsample rather than of behaviour. Reading the stronger tier's zero-crossing intervals as evidence that refinement \emph{does} sustain an edge would overread them exactly as the pooled estimator overreads the opposite (open problem~3). Part~C does not measure $\gamma_t$ at all, so Cor.~\ref{cor:convergence} is conditional throughout.
+    \item \textbf{Observational data, tier assignment, and version pooling.} Part~C's model tier is \emph{not} randomly assigned: Opus is often used for planning while Sonnet handles execution, so the tier contrast is partly a task-type contrast. The survivor ratio is also a structural proxy for quality, not functional correctness. Finding~2's checks adjust for task type, repository and developer but not model version, which is why the discriminator is re-run as a version-resolved trend. That the null survives removes pooling as the explanation without making it a demonstrated zero, and reading it as evidence \emph{against} a capability effect would overread it. Finding~3's human contrast is likewise an era comparison.
+\end{itemize}
+Orchestrator-worker topologies are addressed formally in Appendix~\ref{app:orchestration}.
+
+%% ============================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+Reading agentic coding as residual prediction yields a refinement game, a stationarity dichotomy (Prop.~\ref{prop:dichotomy}), and a frozen-weight ceiling. A fixed reachable class and a bounded metric force strict diminishing returns, so freezing weights does not by itself guarantee a safe, saturating trajectory: audit the scaffold, not the checkpoint. The ceiling binds sideways too: best-of-$k$ orchestration realizes the best worker's ceiling \emph{exactly} (Prop.~\ref{prop:orchestration}), the diversity a vote would need is absent on real workers (a majority failing \statPBOverlapViolate\ of tasks), and re-consulting a fixed pool has a computable horizon unless that pool can already fit the work (Prop.~\ref{prop:pool-dichotomy}). The mapping is also \emph{not} boosting in the technical sense, since patches compose rather than vote. But both remaining gaps are properties of harnesses as currently built rather than laws about code, and together they specify a harness worth building. What we measure is saturation, on SWE-bench and across \statPCSessions\ production sessions matched in shape by a pre-AI human baseline. What remains open is the mechanism: a genuinely fixed reachable class, or the ordinary economics of editing. Holding weights fixed while varying the scaffold would separate the two. This data does not run that design; it argues for the experiment that would.
+
+%% ============================================================
+\section*{Responsible Use Statement}
+\label{sec:responsible-use}
+
+Recursive self-improvement in coding agents is dual-use adjacent, but this paper's finding runs the other way: a \emph{saturation and limits} result, not an acceleration recipe. The criterion, whether the reachable hypothesis class is stationary, lets evaluators \emph{recognize} when a self-modifying system could escape diminishing returns instead of reading frozen weights as assurance, and we release no technique or scaffold that expands an agent's reachable class. Part~C releases \statPCReleasedDatasets\ session datasets covering \statPCReleasedDevelopers\ people's commit timing, structural only: developer identity is a salted hash whose roster is withheld, and no code content, file paths or commit messages survive (sanitization audit in Appendix~\ref{app:partc}). This is IP-safe but not anonymous in the strong sense, since commit timing is in principle linkable by anyone holding the original repositories. We also disclose substantial AI assistance in drafting this manuscript.
+
+\clearpage
+\typeout{MAINBODY-ENDPAGE:\thepage}
+
+%% ============================================================
+% After the MAINBODY-ENDPAGE marker, so it never counts against the body limit.
+% The style's ack env is auto-hidden in anonymized builds.
+\begin{ack}
+The authors thank Tom Edwards and colleagues at OnCorps for feedback and
+discussions that improved this work. Tom Edwards authored much of the OnCorps
+production code whose commit histories form the Part~C dataset, and we
+gratefully acknowledge the engineering work that made that analysis possible.
+We thank Brett Roads for detailed comments on an earlier draft that
+substantially improved its clarity and framing. We also thank Peter Riefer,
+Aristeidis Panos, Bradley Love and Simon Busch-Moreno for their feedback, and
+the Data Science Team at OnCorps for comments on the manuscript.
+\end{ack}
+
+%% ============================================================
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\clearpage
+\input{paper_appendix}
+
+\end{document}

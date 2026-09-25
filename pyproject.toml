@@ -1,0 +1,199 @@
+[project]
+name = "audit-the-scaffold"
+version = "0.1.0"
+description = "Simulations for 'Audit the Scaffold, Not the Checkpoint', including a real-LLM SWE-bench refinement experiment."
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+    "scikit-learn>=1.4",
+    "datasets>=2.19",
+    "rapidfuzz>=3.9",
+    "litellm>=1.44",
+    "mini-swe-agent>=1.0",
+    "unidiff>=0.7.5",
+    "scipy>=1.11",
+    "statsmodels>=0.14",
+    "pandas>=2.2",
+    "modal>=1.5.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "pandas-stubs>=3.0",
+    "radon>=6.0",
+    # radon reports complexity but cannot fail on it: `radon cc -n C` filters what is
+    # *displayed* and exits 0 regardless. xenon is radon's own CI companion (same
+    # author) and supplies the missing exit code -- see the `check` target in the
+    # Makefile. Its transitive deps (requests, PyYAML) were already in uv.lock before
+    # it was added, so the new surface is xenon itself.
+    "xenon>=0.9.3",
+    "vulture>=2.11",
+    "tach>=0.19",
+]
+
+# ---------------------------------------------------------------------------
+# The new LLM experiment lives in `llm_simulations.py`. The gate configuration
+# below targets the NEW/touched code; the legacy stump simulations
+# (`simulations.py`, `swe_bench_simulations.py`, `scratch.py`) are documented
+# excludes (kept as a "stylized theoretical validation", not refactored here).
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+    "simulations.py",
+    "swe_bench_simulations.py",
+    "scratch.py",
+    ".vulture_allowlist.py",  # vulture idiom: bare names are intentional (B018/F821)
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests may use assert (S101) and non-crypto RNG for fixtures (S311).
+"test_llm_simulations.py" = ["S101"]
+"test_company.py" = ["S101", "S311", "S603", "S607"]
+"test_swe_bench_simulations.py" = ["S101", "S311"]
+"test_part_b_anova_power.py" = ["S101"]
+"test_part_b_edge_overlap.py" = ["S101"]
+"test_part_c_control_stats.py" = ["S101"]
+"test_generate_stats_macros.py" = ["S101"]
+"test_references.py" = ["S101"]
+"test_lean_index.py" = ["S101"]
+"test_formula_supplement.py" = ["S101"]
+"test_macro_usage.py" = ["S101"]
+"test_discover_cohorts.py" = ["S101"]
+"test_validate_diagnostic_28task.py" = ["S101"]
+# Simulations purposefully use non-crypto RNG (S311).
+"company_simulations.py" = ["S311"]
+# git_session_extractor calls git as a subprocess with a well-known path (S603, S607).
+"git_session_extractor.py" = ["S603", "S607"]
+"scripts/resolve_author_aliases.py" = ["S603", "S607"]
+"scripts/discover_cohorts.py" = ["S603", "S607"]
+
+[tool.mypy]
+python_version = "3.12"
+files = [
+    "llm_simulations.py",
+    "test_llm_simulations.py",
+    "company_simulations.py",
+    "git_session_extractor.py",
+    # `scripts/` has no __init__.py and is imported as a namespace package
+    # (`import scripts.part_b_anova_power`); mypy derives module names for it.
+    "scripts",
+]
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+
+# Optional/heavy runtime deps are lazy-imported; do not require their stubs for
+# the gates to pass.
+[[tool.mypy.overrides]]
+module = [
+    "datasets.*",
+    "litellm.*",
+    "minisweagent.*",
+    "modal.*",
+    "rapidfuzz.*",
+    "matplotlib.*",
+    "sklearn.*",
+    "scipy.*",
+    "yaml",
+    # statsmodels ships no py.typed marker and has no stub distribution, so the
+    # mixed-model call sites in company_simulations/part_b_anova_power are
+    # unanalyzable either way. Ignoring the import keeps the rest of those modules
+    # gated rather than leaving whole files ungated.
+    #
+    # pandas is deliberately NOT ignored here: `pandas-stubs` is a dev dependency,
+    # so DataFrame call sites are genuinely type-checked.
+    "statsmodels.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Legacy stump module is a documented exclude; llm_simulations depends on it only
+# for the shared RNG seed. Do not type-check it here.
+module = ["simulations"]
+follow_imports = "skip"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Tests exercise private helpers and monkeypatching; relax a couple of rules.
+module = ["test_llm_simulations"]
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+# `-m "not slow"` keeps the default run at ~35s instead of ~5m20s. The five
+# deselected tests re-run permutation tests and mixed models over the full merged
+# cohort: measured, they cost 282s of a 318s run and contribute 2 statements and 2
+# partial branches of coverage that nothing else reaches, so the default run still
+# clears the 90% floor without them. They pin paper-reported numbers, so run them
+# before any paper build or release: `uv run --extra dev pytest -m ""`.
+addopts = "--cov=llm_simulations --cov=company_simulations --cov=git_session_extractor --cov=scripts.part_c_control_stats --cov=scripts.anonymize_sessions --cov=scripts.part_b_edge_overlap --cov=scripts.generate_stats_macros --cov-report=term-missing --cov-fail-under=90 -m \"not slow\" -q"
+markers = [
+    "slow: re-runs a heavy estimator over the full cohort (deselected by default)",
+]
+testpaths = [
+    "test_llm_simulations.py",
+    "test_company.py",
+    "test_swe_bench_simulations.py",
+    "test_part_b_anova_power.py",
+    "test_part_b_edge_overlap.py",
+    "test_part_c_control_stats.py",
+    "test_generate_stats_macros.py",
+    # Tests for the pure helpers extracted from two CLI entrypoints that had no
+    # coverage and cannot be run from this repo at all -- discover_cohorts needs a
+    # --root of repository clones whose paths were scrubbed before publication, and
+    # validate_diagnostic_28task needs VPN-only proxy credentials plus Modal. Both
+    # scripts are deliberately absent from the --cov= list above: the coverage gate is
+    # a union over its modules, so adding a mostly-uncovered extraction script would
+    # dilute the 90% floor rather than protect anything.
+    # (cluster_authors was already covered -- those tests live in test_company.py.)
+    "test_discover_cohorts.py",
+    "test_validate_diagnostic_28task.py",
+    # The two paper-surface guards. Both were reachable only by naming them explicitly on
+    # the command line until they were listed here: `testpaths` is a whitelist, so
+    # test_references.py sat green and uncollected for a day, gating nothing.
+    "test_references.py",
+    "test_lean_index.py",
+    # Same class of guard as test_lean_index.py, for the other companion artifact:
+    # formula_supplement.tex is standalone (it never \inputs the paper), so nothing in
+    # the build notices when its cross-references go stale. Eleven of twelve had.
+    "test_formula_supplement.py",
+    # Third guard of the same class, for the surface a prose revision breaks: every
+    # statistic reaches the reader through a \stat* macro, and dropping the last citation
+    # of one removes a number while leaving the build green. scripts/check_macro_usage.py
+    # computed this already and was wired into nothing.
+    "test_macro_usage.py",
+]
+
+[tool.coverage.run]
+# Kept in step with the --cov flags in `addopts`, which override this list.
+# `simulations` is not measured: it is a documented legacy exclude.
+source = ["llm_simulations", "company_simulations"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    # CLI entrypoints are not coverage-gated. They are argparse + orchestration +
+    # file-writing over functions that are covered individually, so measuring them
+    # dilutes the number rather than protecting anything. This generalises the
+    # convention company_simulations.py:main already applied inline
+    # ("# pragma: no cover -- CLI entrypoint"), so the rule is declared once here
+    # instead of re-argued per file. Verified not to inflate the existing gate:
+    # it removes 43 statements and 1 uncovered line, leaving llm_simulations at 93%.
+    "def main\\(\\) -> (None|int):",
+]

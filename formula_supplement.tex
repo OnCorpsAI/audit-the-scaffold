@@ -1,0 +1,466 @@
+% formula_supplement.tex — Color-coded formula decoder for
+% "Audit the Scaffold, Not the Checkpoint" (companion to paper.pdf).
+% Standalone: does NOT \input paper.tex or paper_appendix.tex, and cannot affect the paper build.
+% Build:  pdflatex formula_supplement.tex   (no bibtex; no citations)
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=black}
+
+% Shared headline-statistics macros, the same single source of truth paper.tex
+% uses. Every empirical value quoted below MUST come from a \stat... macro
+% rather than a literal: this file previously hard-coded its own copies and
+% drifted badly from the paper (Part B K, and all six Part C statistics --
+% including a "directional" tier gap the paper reports as a null).
+\input{stats_macros}
+
+% --- Paper macros reused inside formulas (from paper.tex:38-44) ---
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\Hyp}{\mathcal{H}}
+\newcommand{\sign}{\mathrm{sign}}
+\newcommand{\err}{\mathrm{err}}
+
+% --- Semantic-role color palette (Paul Tol "muted", colorblind-safe) ---
+\definecolor{specclr}{HTML}{332288}  % indigo  — specifications / inputs / distribution
+\definecolor{tgtclr}{HTML}{117733}   % green   — targets / optimal output
+\definecolor{agentclr}{HTML}{882255} % wine    — weak agent / hypothesis / operators
+\definecolor{wtclr}{HTML}{AA4499}    % purple  — confidence weight / margin / normalizer
+\definecolor{erfclr}{HTML}{CC6677}   % rose    — error / edge / loss / thresholds
+\definecolor{valclr}{HTML}{44AA99}   % teal    — quality / value / improvement / ceiling
+\definecolor{empclr}{HTML}{999933}   % olive   — empirical fit parameters
+
+% One wrapper per role; works in math mode.
+\newcommand{\spec}[1]{\textcolor{specclr}{#1}}
+\newcommand{\tgt}[1]{\textcolor{tgtclr}{#1}}
+\newcommand{\agent}[1]{\textcolor{agentclr}{#1}}
+\newcommand{\wt}[1]{\textcolor{wtclr}{#1}}
+\newcommand{\erf}[1]{\textcolor{erfclr}{#1}}
+\newcommand{\val}[1]{\textcolor{valclr}{#1}}
+\newcommand{\empc}[1]{\textcolor{empclr}{#1}}
+
+% --- Legend helper: one row = colored term + plain-English explanation ---
+% \leg{$colored term$}{explanation text}
+\newcommand{\leg}[2]{\item[{\normalfont #1}] #2}
+\newenvironment{legend}%
+  {\par\smallskip\begin{description}[leftmargin=2.6em,style=nextline,font=\normalfont,itemsep=1pt,topsep=2pt]}%
+  {\end{description}\par\smallskip}
+
+\newcommand{\xref}[1]{\par\smallskip{\footnotesize\textit{Main text:} #1}}
+
+\title{\textbf{Annotated Formula Supplement}\\[2pt]
+{\large A Color-Coded Decoder for\\ \emph{Audit the Scaffold, Not the Checkpoint}}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-3em}
+
+\section*{How to read this supplement}
+This companion document reproduces every defining and result formula from the main paper
+and colors each term by its \textbf{semantic role}. A color means the same kind of thing
+\emph{everywhere}: the confidence weight $\wt{\alpha_t}$ is purple in the protocol, in the
+training-error proof, and in the algorithm alike. Structural operators
+($\textstyle\sum,\ \prod,\ \ln,\ \exp$) and plain indices ($t,T,N,i,K$) are left black to
+reduce clutter. Under each formula a short legend names its colored terms in plain English
+and points back to where the formula appears in the main text.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}c l l@{}}
+\toprule
+\textbf{Color} & \textbf{Role} & \textbf{Typical symbols} \\
+\midrule
+$\spec{\blacksquare}$ & Specifications / inputs / spec-distribution & $\spec{\X},\ \spec{x_i},\ \spec{\D},\ \spec{D_t},\ \spec{w_i}$ \\
+$\tgt{\blacksquare}$  & Artifacts: drafts and optimal targets & $\tgt{\Y},\ \tgt{y_i},\ \tgt{y},\ \tgt{z_t}$ \\
+$\agent{\blacksquare}$ & Weak agent / hypothesis / operators & $\agent{h_t},\ \agent{H},\ \agent{\Hyp},\ \agent{R_t},\ \agent{F_T}$ \\
+$\wt{\blacksquare}$   & Confidence weight / margin / normalizer & $\wt{\alpha_t},\ \wt{f(x)},\ \wt{Z_t},\ \wt{J}$ \\
+$\erf{\blacksquare}$  & Error / edge / loss / thresholds & $\erf{\epsilon_t},\ \erf{\gamma_t},\ \erf{L},\ \erf{\theta},\ \erf{\delta}$ \\
+$\val{\blacksquare}$  & Quality / value / improvement / ceiling & $\val{V},\ \val{V^*(W)},\ \val{\eta_t},\ \val{q_{i,t}},\ \val{B}$ \\
+$\empc{\blacksquare}$ & Empirical fit parameters (Part~C) & $\empc{\rho},\ \empc{\sigma},\ \empc{\psi},\ \empc{\pi_{\mathrm{pure}}}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{quote}\small
+\textbf{Two glyph warnings.}
+\emph{(1)}~Two quantities that a single $\tau$ would conflate are kept distinct:
+$\erf{\tau}=0.6$ is Part~B's \emph{pass threshold} (an error/edge quantity, rose), while
+Part~C's \emph{mean survivor-ratio statistics} are $\empc{\psi_{\mathrm{Opus}}},
+\empc{\psi_{\mathrm{Sonnet}}}$ (empirical, olive). Part~C's $\empc{\rho}$ is likewise the
+churn-decay factor only; its rank correlations are written $r_s$.
+\emph{(2)}~The success indicator flips: the theory writes $\erf{L}(\tgt{y},\agent{h}(\spec{x}))>0$
+for \emph{failure}, while the algorithm's weight update writes $\erf{L}(\cdots)=0$ for
+\emph{success} inside the exponent. Both encode the same AdaBoost update, read oppositely.
+\end{quote}
+
+\newpage
+\section{Problem Setup}
+
+\[
+\erf{L}(\tgt{y}, \hat{\tgt{y}}), \qquad \agent{f} : \spec{\X} \to \tgt{\Y}, \qquad
+\D \ \text{over}\ \spec{\X}\times\tgt{\Y}.
+\]
+\begin{legend}
+\leg{$\erf{L}(\tgt{y},\hat{\tgt{y}})$}{structured loss between a candidate artifact $\hat{\tgt{y}}$ and the optimal target $\tgt{y}$ (e.g.\ token or AST edit distance).}
+\leg{$\spec{\X}$}{space of specifications (prompts / issue tickets).}
+\leg{$\tgt{\Y}$}{space of optimal code artifacts (the targets).}
+\leg{$\spec{\D}$}{joint distribution over specification–solution pairs.}
+\leg{$\agent{f}$}{the structured mapping specifications $\to$ code that the system learns.}
+\end{legend}
+\xref{Problem Setup, \S\,Theoretical Analysis.}
+
+\section{Weak Coding Agent and Edge}
+
+\[
+\err_{\spec{\D}}(\agent{h_t}) = \Pr_{(\spec{x},\tgt{y})\sim\spec{\D}}\!\big[\erf{L}(\tgt{y},\agent{h_t}(\spec{x}))>0\big] \ \le\ \tfrac{1}{2}-\erf{\gamma_t}.
+\]
+\begin{legend}
+\leg{$\agent{h_t}$}{the weak coding agent at round $t$: proposes a patch to improve the current draft.}
+\leg{$\err_{\spec{\D}}(\agent{h_t})$}{its probability of failing (nonzero loss) on a spec drawn from $\spec{\D}$.}
+\leg{$\erf{L}(\cdots)>0$}{the boolean failure criterion (loss $>0$ = fail; $=0$ = success).}
+\leg{$\erf{\gamma_t}$}{the \emph{edge} — how much better than chance ($\tfrac12$) the agent is. In code space even a small positive edge presupposes real capability.}
+\end{legend}
+\xref{Definition~1 (Weak Coding Agent); edge revisited in Remark~14.}
+
+\section{Strong Coding System (Two Levels)}
+
+\[
+\agent{F_T}(\spec{x}) = \big(\agent{R_T}\circ \agent{R_{T-1}}\circ\cdots\circ \agent{R_1}\big)\!\big(\agent{F_0}(\spec{x})\big)
+\qquad\text{(artifact level)}
+\]
+\[
+\wt{f}(\spec{x}) = \sum_{t=1}^{T} \wt{\alpha_t}\, \agent{h_t}(\spec{x}), \qquad \wt{\alpha_t}\in\R_{\ge 0}
+\qquad\text{(score level: additive margin)}
+\]
+\begin{legend}
+\leg{$\agent{F_T}$}{the artifact after $T$ rounds — a \emph{sequential composition} of patches (order-dependent, non-linear).}
+\leg{$\agent{R_t}$}{refinement operator applying patch $\agent{h_t}$ to the current draft.}
+\leg{$\agent{F_0}$}{the initial draft before any refinement.}
+\leg{$\wt{f}(\spec{x})$}{the additive confidence \emph{margin} — a weighted vote over specifications; this is what inherits the AdaBoost machinery.}
+\leg{$\wt{\alpha_t}$}{confidence weight assigned to agent $t$.}
+\end{legend}
+\xref{Definition~8 (Strong Coding System). Artifact vs.\ margin distinction (\S\,Framework).}
+
+\section{Agentic Boosting Protocol}
+
+\[
+\erf{\epsilon_t} = \Pr_{(\spec{x},\tgt{y})\sim \spec{D_t}}\!\big[\erf{L}(\tgt{y},\agent{h_t}(\spec{x}))>0\big],
+\qquad
+\wt{\alpha_t} = \tfrac{1}{2}\ln\frac{1-\erf{\epsilon_t}}{\erf{\epsilon_t}},
+\]
+\[
+\spec{D_{t+1}}(i) = \frac{\spec{D_t}(i)\,\exp\!\big(-\wt{\alpha_t}\,\tgt{y_i}\,\agent{h_t}(\spec{x_i})\big)}{\wt{Z_t}}.
+\]
+\begin{legend}
+\leg{$\erf{\epsilon_t}$}{weighted error of agent $t$ under the current spec-distribution $\spec{D_t}$.}
+\leg{$\wt{\alpha_t}$}{confidence weight — larger when the error is smaller (the AdaBoost rule).}
+\leg{$\spec{D_t}(i)$}{weight on spec $i$ at round $t$; hard specs get up-weighted.}
+\leg{$\wt{Z_t}$}{normalizer keeping $\spec{D_{t+1}}$ a probability distribution.}
+\end{legend}
+\xref{Definition~9 (Agentic Boosting Protocol).}
+
+\section{Training-Error Bound}
+
+\[
+\frac{1}{N}\sum_{i=1}^{N}\mathbf{1}\!\big[\agent{H}(\spec{x_i})\neq \tgt{y_i}\big] \ \le\ \prod_{t=1}^{T}\wt{Z_t},
+\qquad \wt{Z_t}=2\sqrt{\erf{\epsilon_t}\,(1-\erf{\epsilon_t})}.
+\]
+\begin{legend}
+\leg{$\agent{H}$}{the strong system's decision (sign of the margin $\wt{f}$).}
+\leg{$\mathbf{1}[\agent{H}\neq \tgt{y_i}]$}{training mistake indicator for spec $i$.}
+\leg{$\prod_t \wt{Z_t}$}{product of per-round normalizers — the bound on training error.}
+\leg{$\wt{Z_t}$}{shrinks below $1$ whenever the agent has positive edge, so the product decays.}
+\end{legend}
+\xref{Theorem~10 (Training Error of Agentic Boosting).}
+
+\section{Exponential Decay of Training Error}
+
+\[
+\err_{\mathrm{train}}(\agent{H}) \ \le\ \exp\!\big(-2\,\erf{\gamma}^2\,T\big).
+\]
+\begin{legend}
+\leg{$\err_{\mathrm{train}}(\agent{H})$}{fraction of training specs the strong system gets wrong.}
+\leg{$\erf{\gamma}$}{uniform edge lower bound ($\erf{\gamma_t}\ge\erf{\gamma}>0$ for all $t$).}
+\leg{$T$}{number of rounds; error falls exponentially in $T$ once the edge holds.}
+\end{legend}
+\xref{Corollary~11 (Exponential Decay). Applies only once agents cross the capability threshold (Remark~14).}
+
+\section{Generalization Bound}
+
+\[
+\Pr_{(\spec{x},\tgt{y})\sim\spec{\D}}\!\big[\agent{H}(\spec{x})\neq \tgt{y}\big]
+\ \le\ \Pr_{\mathrm{train}}\!\big[\tgt{y}\,\wt{f}(\spec{x})\le \erf{\theta}\big]
+\ +\ O\!\left(\sqrt{\frac{\erf{d}\ln(N/\erf{d})\ln(1/\erf{\theta})+\ln(1/\erf{\delta})}{N}}\right).
+\]
+\begin{legend}
+\leg{$\Pr_{\spec{\D}}[\cdots]$}{true (test) error over the data distribution.}
+\leg{$\tgt{y}\,\wt{f}(\spec{x})\le\erf{\theta}$}{training margin-violation term; shrinks as boosting grows margins.}
+\leg{$\erf{\theta}$}{margin threshold ($>0$).}
+\leg{$\erf{d}$}{VC-dimension of the weak-agent class $\agent{\Hyp}$.}
+\leg{$\erf{\delta}$}{failure probability (bound holds with probability $1-\erf{\delta}$).}
+\leg{$N$}{number of i.i.d.\ training samples. The bound is \emph{independent of $T$}.}
+\end{legend}
+\xref{Theorem~12 (Generalization Error). Margin bound of Schapire et al.\ (1998).}
+
+\section{Equivalence to Forward Stagewise Additive Modeling}
+
+\[
+\wt{J}(\wt{\alpha},\agent{h}) = \sum_{i=1}^{N}\exp\!\Big(-\tgt{y_i}\big(\wt{f_{t-1}}(\spec{x_i})+\wt{\alpha}\,\agent{h}(\spec{x_i})\big)\Big),
+\qquad \erf{L}(\tgt{y},\wt{f}(\spec{x})) = e^{-\tgt{y}\,\wt{f}(\spec{x})}.
+\]
+\begin{legend}
+\leg{$\wt{J}(\wt{\alpha},\agent{h})$}{exponential-loss objective minimized greedily each round.}
+\leg{$\wt{f_{t-1}}$}{margin accumulated through round $t-1$.}
+\leg{$\wt{\alpha}\,\agent{h}$}{the new term added this round (weight $\times$ agent).}
+\leg{$\erf{L}=e^{-\tgt{y}\wt{f}}$}{the exponential loss whose greedy coordinate descent \emph{is} the protocol.}
+\end{legend}
+\xref{Theorem~13 (Boosting as Greedy Coordinate Descent).}
+
+\section{The Refinement Game}
+
+\[
+\mathbb{E}_{\tgt{y}\sim\D(\cdot\mid \spec{x})}\big[\val{V}(\agent{R_t}(\tgt{z},a_t^*))\big] \ \ge\ \val{V}(\tgt{z}) + \val{\eta_t}
+\qquad\text{(improvement property)}
+\]
+\[
+\mathbb{E}\big[\val{V}(\tgt{z_T})\big] \ \ge\ \val{V}(\tgt{z_0}) + \sum_{t=1}^{T}\val{\eta_t},
+\qquad
+\sum_{t=1}^{\infty}\val{\eta_t} \ \le\ 1 - \val{V}(\tgt{z_0})
+\quad\text{(saturation)}.
+\]
+\begin{legend}
+\leg{$\val{V}$}{quality function $\tgt{\Y}\to[0,1]$ — how good the current artifact is. Note the domain: quality is scored on \emph{artifacts}, not on the specification space $\spec{\X}$.}
+\leg{$\agent{R_t}(\tgt{z},a_t^*)$}{best refinement of draft $\tgt{z}$ under action $a_t^*$ (patch / refactor / test).}
+\leg{$\val{\eta_t}$}{guaranteed minimum quality gain at round $t$ (analog of the edge $\erf{\gamma_t}$).}
+\leg{$\tgt{z_0},\tgt{z_T}$}{initial and round-$T$ drafts, both artifacts in $\tgt{\Y}$.}
+\leg{$\sum\val{\eta_t}\le 1-\val{V}(\tgt{z_0})$}{total improvement is capped: gains must vanish, $\val{\eta_t}\to 0$.}
+\end{legend}
+\xref{Definition~1 (Weak Coding Agent), which introduces $\agent{R_t}$, and Theorem~2 (Monotone Improvement under Refinement).}
+
+\section{High-Probability Refinement}
+
+\[
+\Pr\!\left[\val{V}(\tgt{z_T}) \ge \val{V}(\tgt{z_0}) + \sum_{t=1}^{T}\val{\eta_t}\right] \ \ge\ 1 - \sum_{t=1}^{T}\erf{p_t}.
+\]
+\begin{legend}
+\leg{$\erf{p_t}$}{per-round probability that the agent \emph{fails} to deliver the gain $\val{\eta_t}$ (a quality regression).}
+\leg{$1-\sum\erf{p_t}$}{union-bound guarantee that all rounds improve, relaxing the strict expectation.}
+\end{legend}
+\xref{Corollary~15 (High-Probability Refinement). Verified against Mathlib's probability library.}
+
+\section{Stationarity Dichotomy}
+
+\[
+\text{(i) fixed ceiling } \val{V}(\tgt{z})\le \val{B}:\quad
+\sum_{t=1}^{\infty}\val{\eta_t} \le \val{B} - \mathbb{E}[\val{V}(\tgt{z_0})]
+\ \Rightarrow\ \val{\eta_t}\to 0 \ \text{(saturation)}.
+\]
+\[
+\text{(ii) sustained edge } \val{\eta_t}\ge \val{c}>0:\quad
+\forall \val{B}\in\R,\ \exists\,T\ \text{s.t.}\ \mathbb{E}[\val{V}(\tgt{z_T})] > \val{B}
+\ \text{(divergence)}.
+\]
+\begin{legend}
+\leg{$\val{B}$}{a fixed upper bound (ceiling) on quality.}
+\leg{$\val{c}$}{a uniform positive per-round gain the expanding class must sustain to diverge.}
+\leg{(i)}{\emph{stationary} regime — fixed reachable class $\Rightarrow$ diminishing returns.}
+\leg{(ii)}{\emph{non-stationary} regime — only a perpetually expanding class escapes the plateau.}
+\end{legend}
+\xref{Proposition~3 (Stationarity Dichotomy). Formally verified in Lean (\texttt{Proposition8.lean}).}
+
+\section{The Frozen-Weight Ceiling}
+
+\[
+\text{(M1)}\ \ \agent{\Hyp_t}(\spec{C}) \ \text{expandable by scaffold rewrites};
+\qquad
+\text{(M2)}\ \ \val{V}(\tgt{z}) \le \val{V^*(\agent{W})}\ \text{for all reachable } \tgt{z}.
+\]
+\[
+\sum_{t=1}^{\infty}\val{\eta_t} \ \le\ \val{V^*(\agent{W})} - \mathbb{E}[\val{V}(\tgt{z_0})],
+\qquad \mathbb{E}[\val{V}(\tgt{z_t})] \nearrow \val{L} \le \val{V^*(\agent{W})}.
+\]
+\begin{legend}
+\leg{$\agent{\Hyp_t}(\spec{C})$}{effective hypothesis class of reachable patches, a function of the mutable scaffold $\spec{C}$.}
+\leg{$\agent{W}$}{the model weights (frozen).}
+\leg{$\val{V^*(\agent{W})}$}{the ultimate quality ceiling achievable with weights $\agent{W}$ by \emph{any} scaffold.}
+\leg{$\val{L}$}{the limit the system saturates to — no greater than the ceiling.}
+\end{legend}
+\xref{Corollary~4 (Frozen-Weight Ceiling): frozen weights guarantee the ceiling $\val{V^*(\agent{W})}$, not a safe trajectory to it. Lean: \texttt{cor\_frozen\_weight\_ceiling}.}
+
+\section{Orchestration Selects a Ceiling; It Does Not Raise One}
+
+\[
+\val{V^*_{\mathrm{orch}}} \;=\; \max_i \val{V^*(\agent{W},\spec{C_i})}
+\qquad\text{(exact equality, unconditional)}.
+\]
+\[
+\mathbb{E}\big[\val{V}(\tgt{z_T})\big] \ \ge\ \val{V}(\tgt{z_0}) + \sum_{t=1}^{T}\max_i \val{\eta_t^{(i)}},
+\qquad
+\sum_{t=1}^{T}\max_i \val{\eta_t^{(i)}} \ \le\ 1 - \val{V}(\tgt{z_0}).
+\]
+\begin{legend}
+\leg{$\spec{C_i}$}{worker $i$'s scaffold — distinct prompts, tools, or specializations, possibly sharing weights $\agent{W}$.}
+\leg{$\val{V^*(\agent{W},\spec{C_i})}$}{worker $i$'s tight ceiling, $\sup\{\val{V}(\tgt{z}):\tgt{z}$ reachable under $\spec{C_i}\}$.}
+\leg{$\val{V^*_{\mathrm{orch}}}$}{what best-of-$k$ selection attains. The $=$ is the content: orchestration \emph{realizes} the best worker's ceiling and never exceeds it, even when no single worker's reachable class contains the union.}
+\leg{$\max_i \val{\eta_t^{(i)}}$}{the orchestrator banks each round's best gain, dominating every worker's depth-only guarantee\ldots}
+\leg{$\le 1-\val{V}(\tgt{z_0})$}{\ldots yet the total is still capped by the same bounded metric: \textbf{width buys rate, not budget}.}
+\end{legend}
+\xref{Proposition~5 (Orchestration Selects a Ceiling). The equality is where the formalization
+earned its place: a conjectured \emph{strict} inequality was refuted by two disjoint singleton
+classes of equal value. Width half stated separately as Prop.~18, whose extra hypothesis
+(monotonicity of the inner action-expectation) the formalization flags.}
+
+\section{Bounded Overlap Characterizes a Correct Vote}
+
+\[
+\erf{m_i} \;:=\; \#\{\, 0\le t<k \;:\; \tgt{y_i}\,\agent{h_t}(\spec{x_i}) = -1 \,\},
+\qquad
+\erf{m^\star} \;:=\; \max_i \erf{m_i}.
+\]
+\[
+\tgt{y_i}\,\wt{f}(\spec{x_i}) \;=\; k - 2\erf{m_i}
+\qquad\Longrightarrow\qquad
+\text{vote error}=0
+\ \iff\ 2\erf{m_i}<k\ \ \forall i
+\ \iff\ \erf{m^\star} < k/2 .
+\]
+\[
+\text{measured (Part~B): } \erf{m^\star} = k \ \text{ at every round.}
+\]
+\begin{legend}
+\leg{$\erf{m_i}$}{how many of the $k$ workers fail point $i$. The index runs $0\le t<k$, matching the formalization's \texttt{range k}; it counts all $k$ workers, not $k-1$.}
+\leg{$\erf{m^\star}$}{the \emph{tight overlap} — one integer that decides whether a vote can work at all.}
+\leg{$\tgt{y_i}\wt{f}(\spec{x_i})=k-2\erf{m_i}$}{splitting the unweighted margin at point $i$; this identity is the whole proof.}
+\leg{$\erf{m^\star}<k/2$}{\emph{exact}, not merely sufficient — and sharp: one point at $2\erf{m_i}{=}k$ already makes the error nonzero, and if every point sits there the error is $1$.}
+\leg{$\erf{m^\star}=k$}{our pool at the ceiling of overlap: some task defeats \emph{every} worker, so the red mass is the vote's error.}
+\end{legend}
+\xref{Proposition~6 (Bounded Overlap Characterizes a Correct Vote), measured in
+\S\,Theoretical Analysis (Fig.~1). Weighted voting is the one boosting-\emph{exact}
+arrangement (Prop.~17), which is why this condition, not the ceiling, is what binds a
+verifier-free orchestrator. Lean: \texttt{vote\_margin\_eq},
+\texttt{thm\_overlap\_iff\_zero\_error}, \texttt{cor\_tight\_overlap\_iff},
+\texttt{thm\_overlap\_boundary\_sharp}.}
+
+\section{The Reused-Pool Dichotomy}
+
+\[
+\erf{\epsilon_0} \;:=\; \min\Big\{\text{zero-one training error of } \textstyle\sum_j \wt{A_j}\,\agent{H_j} \;:\; \wt{A_j}\ge 0\Big\}
+\qquad\text{(a property of the pool alone)}.
+\]
+\[
+\text{(i)}\ \ \erf{\epsilon_0}>0:\quad
+\erf{\epsilon_0} \ \le\ e^{-2\erf{\gamma}^2 T}
+\qquad\Longrightarrow\qquad
+T \ \le\ \frac{\log(1/\erf{\epsilon_0})}{2\erf{\gamma}^2}.
+\]
+\[
+\text{(ii)}\ \ \erf{\epsilon_0}=0:\quad
+\forall \spec{D}\ \ \exists j:\ \sum_{i\,:\,\tgt{y_i}\agent{H_j}(\spec{x_i})=-1}\!\!\spec{D}(i) \ \le\ \tfrac12-\erf{\gamma},
+\qquad \erf{\gamma} \;=\; \frac{\erf{\theta}}{2\wt{S}} \;>\; 0 .
+\]
+\begin{legend}
+\leg{$\erf{\epsilon_0}$}{best zero-one training error any \emph{nonnegative combination} of the pool attains — the quantity that decides which branch applies.}
+\leg{(i)}{the \emph{horizon}: the edge hypothesis provably fails by a finite, computable round, uniformly over the schedule and the confidences, depending on $k$ only through $\erf{\epsilon_0}$.}
+\leg{$\erf{\theta},\wt{S}$}{interpolation margin $\min_i \tgt{y_i}\sum_j \wt{A_j}\agent{H_j}(\spec{x_i})$ and coefficient sum $\sum_j \wt{A_j}$ of the witnessing combination.}
+\leg{(ii)}{the edge $\erf{\gamma}{=}\erf{\theta}/2\wt{S}$ is fixed \emph{before} the distribution is chosen, so the hypothesis survives every round of any run.}
+\leg{exhaustive}{the two cases are mutually exclusive and cover everything: \textbf{a fixed pool is not a renewable resource}.}
+\end{legend}
+\xref{Proposition~7 (Reused-Pool Dichotomy); halves stated with their exact hypotheses as
+Props.~20 and~21. Only the interpolating direction is formalized — the converse needs
+AdaBoost's minimax duality and remains unformalized.}
+
+\section{Framework Mapping (Boosting $\leftrightarrow$ Coding)}
+
+\[
+\underbrace{\spec{X}}_{\text{input}}\ \mapsto\ \underbrace{\tgt{Y}}_{\text{target}},
+\qquad
+\underbrace{\tgt{Y}-\agent{F_{t-1}}(\spec{X})}_{\text{residual}}\ \approx\ \agent{h_t},
+\qquad
+\text{loss } \erf{L}(\tgt{Y},\hat{\tgt{Y}}),\quad
+\text{distribution } \spec{D_t}.
+\]
+\begin{legend}
+\leg{$\spec{X}\mapsto\tgt{Y}$}{structured-prediction view: a specification maps to its optimal code.}
+\leg{$\agent{F_{t-1}}(\spec{X})$}{current draft after $t-1$ rounds.}
+\leg{$\tgt{Y}-\agent{F_{t-1}}(\spec{X})$}{the \emph{residual error} each weak agent $\agent{h_t}$ predicts (a git diff / patch).}
+\end{legend}
+\xref{Table~1 (Framework mapping), \S\,Framework.}
+
+\section{Algorithm: Agentic Boosting Protocol for Specifications}
+
+\begin{align*}
+&\textbf{Require: } \{(\spec{x_i},\tgt{y_i})\}_{i=1}^{N},\ T
+   &&\text{spec--code pairs, rounds}\\
+&\spec{w_i} \leftarrow 1/N
+   &&\text{initialize weights}\\
+&\erf{\epsilon_t} = \sum_i \spec{w_i}\,\mathbf{1}\!\big[\erf{L}(\tgt{y_i},\agent{h_t}(\spec{x_i}))>0\big]
+   &&\text{select } \agent{h_t}\text{ minimizing weighted error}\\
+&\text{if } \erf{\epsilon_t}\ge \tfrac12:\ \text{stop}
+   &&\text{no weak learner available}\\
+&\wt{\alpha_t} \leftarrow \tfrac12\ln\frac{1-\erf{\epsilon_t}}{\erf{\epsilon_t}}
+   &&\text{confidence weight}\\
+&\spec{w_i} \leftarrow \spec{w_i}\cdot\exp\!\big(-\wt{\alpha_t}\,\mathbf{1}[\erf{L}(\tgt{y_i},\agent{h_t}(\spec{x_i}))\,{=}\,0]\big)
+   &&\text{re-weight (note: }{=}0\text{ = success)}\\
+&\spec{w_i} \leftarrow \spec{w_i}/\textstyle\sum_j \spec{w_j}
+   &&\text{normalize}\\
+&\textbf{return } \agent{H}(\spec{x})=(\agent{R_T}\circ\cdots\circ \agent{R_1})(\tgt{z_0}),\ \ \wt{f}(\spec{x})=\textstyle\sum_t \wt{\alpha_t}\,\agent{h_t}(\spec{x})
+   &&\text{artifact + margin}
+\end{align*}
+\begin{legend}
+\leg{$\spec{w_i}$}{unnormalized weight on spec $i$ (the operational form of $\spec{D_t}$).}
+\leg{$\mathbf{1}[\erf{L}=0]$}{success indicator — note this flips the theory's $>0$ (failure) convention.}
+\leg{return}{artifact $\agent{H}$ by sequential composition; confidence by additive margin $\wt{f}$.}
+\end{legend}
+\xref{Algorithm~1 (Appendix). Operational form of Definition~9.}
+
+\section{Part~B: SWE-bench Regime Estimators}
+
+\[
+\val{q_{i,t}}\in[0,1],\quad \erf{\tau}=0.6,\qquad
+\erf{\err_t}=\tfrac{1}{K}\sum_i \mathbf{1}\!\big[\max_{s\le t}\val{q_{i,s}}<\erf{\tau}\big]\ \approx\ \exp\!\big(-2\textstyle\sum_s \erf{\gamma_s}^2\big).
+\]
+\[
+\val{S_{i,t}}=\sum_{s\le t}\max\!\big(0,\val{q_{i,s}}-\val{q_{i,s-1}}\big)\ \le\ 1-\val{q_{i,0}},
+\qquad
+\val{m_{i,t}}=2\val{q_{i,t}}-1.
+\]
+\begin{legend}
+\leg{$\val{q_{i,t}}$}{binary harness pass/fail of task $i$ at round $t$ ($1$ = all \texttt{FAIL\_TO\_PASS} pass, no regressions).}
+\leg{$\erf{\tau}=0.6$}{pass \emph{threshold} on the $[0,1]$ partial score $\val{q_{i,t}}$ — the only meaning $\tau$ now carries.}
+\leg{$\erf{\err_t}$}{running-best pass error over $K$ tasks; tracks the exponential-decay prediction.}
+\leg{$\val{S_{i,t}}$}{cumulative improvement, bounded by headroom $1-\val{q_{i,0}}$ (refinement saturation).}
+\leg{$\val{m_{i,t}}$}{margin per task; predicted to shift rightward across rounds.}
+\end{legend}
+\xref{\S\,Part~B (Quality signal; Predictions), $K{=}\statPBK$, $T{=}\statPBRounds$.}
+
+\section{Part~C: Production-Session Empirical Model}
+
+\[
+\text{survivor ratio} = \frac{|\text{net lines}|}{\text{total churn}},
+\qquad
+\empc{\psi_{\mathrm{Opus}}}\approx \statPCTauOpus \ \ \text{vs.}\ \ \empc{\psi_{\mathrm{Sonnet}}}\approx \statPCTauSonnet.
+\]
+\[
+\log(\text{churn}_{t+1}) \sim \mathcal{N}\!\big(\empc{\rho}\log(\text{churn}_t),\,\empc{\sigma}^2\big),
+\quad \empc{\rho}=\statPCRho,\ \empc{\sigma}=\statPCSigma,\quad
+\empc{\pi_{\mathrm{pure}}}\approx \statPCPiPure.
+\]
+\begin{legend}
+\leg{survivor ratio}{structural proxy: net lines retained over total churn (\texttt{git\_session\_extractor.py:152}).}
+\leg{$\empc{\psi_{\mathrm{Opus}}},\empc{\psi_{\mathrm{Sonnet}}}$}{mean non-pure survivor ratios by model tier — the Part-C meaning of $\tau$ (a statistic, not a threshold). Gap $=\statPCGap$ (95\%~CI \statPCGapCI), a null surviving four independent robustness checks --- not a directional effect.}
+\leg{$\empc{\rho}$}{geometric churn-decay rate (log-normal AR(1) coefficient); $<1$ signals convergence.}
+\leg{$\empc{\sigma}$}{spread of the log-normal churn model.}
+\leg{$\empc{\pi_{\mathrm{pure}}}$}{mixture weight for pure-addition sessions (survivor ratio $=1$).}
+\end{legend}
+\xref{\S\,Part~C, Findings~1--3. Ties $\empc{\rho}$ to Theorem~2 decay and $\empc{\psi}$ to the $\val{V^*(\agent{W})}$ ceiling (Corollary~4).}
+
+\end{document}

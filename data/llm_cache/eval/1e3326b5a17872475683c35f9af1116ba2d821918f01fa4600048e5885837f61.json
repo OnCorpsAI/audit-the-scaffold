@@ -1,0 +1,1 @@
+{"quality": 0.5, "passed": false, "detail": "harness:ftp=2/2,ptp_reg=2", "feedback": "Test harness: 2/2 required tests passed.\nFailure details:\n  FAILED tests/test_util_rst.py::test_prepend_prolog - AssertionError: assert [...\n  FAILED tests/test_util_rst.py::test_prepend_prolog_with_roles_in_sections - A...", "fraction_passing": 1.0}

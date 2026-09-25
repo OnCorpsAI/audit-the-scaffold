@@ -1,0 +1,85 @@
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+paper.pdf
+!docs/assets/paper.pdf
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+data/*.json
+!data/swebench_image_digests.json
+!data/company_params.json
+!data/company_sessions.json
+!data/company_control_sessions.json
+!data/part_c_control_stats.json
+!data/company_within_era_ai_sessions.json
+!data/company_within_era_nonai_sessions.json
+!data/llm_metrics_haiku_t4_pinned.json
+!data/llm_metrics_sonnet_t4_pinned.json
+!data/llm_results_haiku_t4_pinned.json
+!data/llm_results_sonnet_t4_pinned.json
+!data/swe_exp1_results.json
+!data/swe_exp2_results.json
+!data/swe_exp3_results.json
+!data/llm_results_haiku_independent.json
+!data/llm_metrics_haiku_independent.json
+!data/llm_results_haiku_blind.json
+!data/llm_metrics_haiku_blind.json
+!data/llm_results_haiku_diagnostic.json
+!data/llm_metrics_haiku_diagnostic.json
+!data/llm_results_sonnet_independent.json
+!data/llm_metrics_sonnet_independent.json
+!data/llm_results_sonnet_blind.json
+!data/llm_metrics_sonnet_blind.json
+!data/llm_results_sonnet_diagnostic.json
+!data/llm_metrics_sonnet_diagnostic.json
+# Part B analysis outputs. These are the direct inputs to
+# scripts/generate_stats_macros.py (and the source of every \statPB macro in
+# stats_macros.tex), so without them the generator cannot run on a fresh
+# clone and Appendix B's "committed analysis script that reproduces every
+# Part B table and figure directly from that data" is unsatisfiable. ~10KB.
+!data/part_b_k55_anova_power.json
+!data/part_b_k55_paper_numbers.json
+!data/part_b_edge_overlap.json
+data/*.csv
+figures/*.png
+
+# Internal comms drafts (emails, rollout notes) — not part of the paper
+comms/
+
+# Python tooling / uv
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Run archives (superseded scratch; may contain local paths — not committed)
+data/runs/
+
+# Local environment variables (never commit)
+.env
+
+# Slide decks and the local scripts that build them; not part of the release.
+*.pptx
+scripts/create_*_presentation.py
+
+# Machine-local sync helpers: they hardcode absolute local paths, which this repo
+# keeps out of tracked files.
+scripts/sync_*.sh
+
+# Internal working notes (change contracts, lessons); kept locally, not released.
+tasks/
+
+# arXiv source bundle, rebuilt by make arxiv
+arxiv_submit/

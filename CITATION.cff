@@ -1,0 +1,43 @@
+cff-version: 1.2.0
+message: "If you use this software or refer to this work, please cite the paper below."
+title: >-
+  Audit the Scaffold, Not the Checkpoint: A Stationarity Dichotomy for
+  Recursive Self-Improvement in Agentic Coding
+type: software
+authors:
+  - family-names: Bobadilla-Suarez
+    given-names: Sebastian
+    affiliation: OnCorps
+    email: sebastian.suarez@oncorps.io
+  - family-names: Suh
+    given-names: Bob
+    affiliation: OnCorps
+    email: bob@oncorps.io
+  - family-names: Fortin
+    given-names: Ryan
+    affiliation: OnCorps
+    email: ryan@oncorps.io
+license: MIT
+repository-code: "https://github.com/OnCorpsAI/audit-the-scaffold"
+date-released: 2026-07-23
+preferred-citation:
+  type: article
+  title: >-
+    Audit the Scaffold, Not the Checkpoint: A Stationarity Dichotomy for
+    Recursive Self-Improvement in Agentic Coding
+  authors:
+    - family-names: Bobadilla-Suarez
+      given-names: Sebastian
+      affiliation: OnCorps
+      email: sebastian.suarez@oncorps.io
+    - family-names: Suh
+      given-names: Bob
+      affiliation: OnCorps
+      email: bob@oncorps.io
+    - family-names: Fortin
+      given-names: Ryan
+      affiliation: OnCorps
+      email: ryan@oncorps.io
+  year: 2026
+  month: 7
+  notes: "Preprint."

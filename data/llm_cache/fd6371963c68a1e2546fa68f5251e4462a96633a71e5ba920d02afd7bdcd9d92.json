@@ -1,0 +1,1 @@
+{"response": "diff --git a/lib/matplotlib/__init__.py b/lib/matplotlib/__init__.py\nindex c268a56..1dc450a 100644\n--- a/lib/matplotlib/__init__.py\n+++ b/lib/matplotlib/__init__.py\n@@ -1088,6 +1088,7 @@ def rc_context(rc=None, fname=None):\n \n     \"\"\"\n     orig = rcParams.copy()\n+    del orig[\"backend\"]\n     try:\n         if fname:\n             rc_file(fname)\n"}

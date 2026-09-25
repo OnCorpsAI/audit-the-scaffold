@@ -1,0 +1,1 @@
+{"response": "diff --git a/src/_pytest/assertion/util.py b/src/_pytest/assertion/util.py\nindex 762e576..570786e 100644\n--- a/src/_pytest/assertion/util.py\n+++ b/src/_pytest/assertion/util.py\n@@ -86,7 +86,7 @@ def issequence(x):\n \n \n def istext(x):\n-    return isinstance(x, str)\n+    return isinstance(x, (str, bytes))\n \n \n def isdict(x):\n"}
