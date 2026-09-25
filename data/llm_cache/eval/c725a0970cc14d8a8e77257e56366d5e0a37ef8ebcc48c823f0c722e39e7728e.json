@@ -1,0 +1,1 @@
+{"quality": 0.9, "passed": false, "detail": "harness:ftp=9/10,ptp_reg=0", "feedback": "Test harness: 9/10 required tests passed.\nThese required tests still fail (must go FAIL \u2192 PASS):\n  test_requests.py::RequestsTestCase::test_iter_content_handles_socket_error\nRevise your patch to make the failing required tests pass.", "fraction_passing": 0.9}

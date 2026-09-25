@@ -1,0 +1,95 @@
+# Module-boundary enforcement for the analysis code.
+#
+# The previous version of this file declared two modules -- `llm_simulations` and
+# `simulations` -- and so validated exactly one edge, backed by a single
+# `from simulations import RNG_SEED`. Everything else (`company_simulations`,
+# `git_session_extractor`, all of `scripts/`) was undeclared, which put it in tach's
+# *root module*; that defaults to "ignore", so those files' dependencies were never
+# checked. `tach report scripts/part_c_control_stats.py` reported "No dependencies
+# found" while line 39 of that file imported `company_simulations`.
+#
+# Three things fix that, in order of importance:
+#
+#   1. `root_module = "forbid"` -- code in a source root that belongs to no declared
+#      module is an error. This is the load-bearing line: it is what stops the *next*
+#      top-level module from silently landing outside the graph, which is how this
+#      config decayed in the first place.
+#   2. Every first-party module is declared and assigned a layer.
+#   3. `forbid_circular_dependencies` is actually set. The old comment here claimed
+#      "no cycles are permitted" while the flag was absent -- true only accidentally,
+#      because one edge cannot form a cycle.
+#
+# Layers are ordered highest first and permit imports *downward* only, so the rule
+# that matters is enforced without per-edge bookkeeping: a library may never import a
+# script. Same-layer edges must still be declared explicitly via `depends_on`.
+source_roots = ["."]
+
+exclude = [
+    # Tests legitimately reach into private helpers of the modules they cover, and
+    # they import across every layer. Excluding them matches tach's own project
+    # config, which excludes its test tree for the same reason.
+    "test_*.py",
+    # Vendored third-party Python: lean_proofs/.lake/packages/mathlib/scripts/ holds
+    # 29 files that are not ours to govern.
+    "lean_proofs",
+    # Scratch file, absent from a clean checkout; also excluded from ruff.
+    "scratch.py",
+    # vulture idiom -- bare names, no imports to check.
+    ".vulture_allowlist.py",
+    ".venv",
+    "**/__pycache__",
+]
+
+exact = true                        # a declared dependency that is not used is an error
+forbid_circular_dependencies = true
+root_module = "forbid"
+
+layers = ["scripts", "analysis", "foundation"]
+
+# --- foundation: no first-party dependencies, imported by everything above ---------
+
+[[modules]]
+# Boosting primitives for the stylized simulations. A documented legacy module: it is
+# excluded from ruff and from coverage, but it is declared here because
+# `llm_simulations` imports it and that edge is worth pinning.
+path = "simulations"
+layer = "foundation"
+depends_on = []
+
+[[modules]]
+# git-log extraction and HMAC anonymization. Foundation rather than analysis: it reads
+# repositories and emits datasets, and knows nothing about the statistics run over them.
+path = "git_session_extractor"
+layer = "foundation"
+depends_on = []
+
+# --- analysis: statistics over the extracted datasets -----------------------------
+
+[[modules]]
+path = "llm_simulations"
+layer = "analysis"
+depends_on = []
+
+[[modules]]
+path = "company_simulations"
+layer = "analysis"
+depends_on = []
+
+[[modules]]
+# Legacy stump simulations. Excluded from ruff and from the boundary check before this
+# rewrite; declared and `unchecked` now instead, so it lives inside the graph (which
+# `root_module = "forbid"` requires) without its imports being constrained.
+path = "swe_bench_simulations"
+layer = "analysis"
+unchecked = true
+depends_on = []
+
+# --- scripts: top layer, consumers only -------------------------------------------
+#
+# Every script may import downward from analysis and foundation without declaring it.
+# The `sys.path.insert(...)` + `# noqa: E402` preamble in several of these is exactly
+# the upward reach this layer makes legible: it is allowed here and forbidden below.
+
+[[modules]]
+path = "scripts.*"
+layer = "scripts"

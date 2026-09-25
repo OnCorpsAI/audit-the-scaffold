@@ -1,0 +1,1 @@
+{"response": "diff --git a/sklearn/neighbors/base.py b/sklearn/neighbors/base.py\nindex 3e5e729..80c5f79 100644\n--- a/sklearn/neighbors/base.py\n+++ b/sklearn/neighbors/base.py\n@@ -7,6 +7,7 @@\n #\n # License: BSD 3 clause (C) INRIA, University of Amsterdam\n import warnings\n+import numbers\n from abc import ABCMeta, abstractmethod\n \n import numpy as np\n"}

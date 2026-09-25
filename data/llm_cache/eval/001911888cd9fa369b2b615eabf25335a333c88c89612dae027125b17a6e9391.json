@@ -1,0 +1,1 @@
+{"quality": 0.5, "passed": false, "detail": "harness:ftp=1/1,ptp_reg=2", "feedback": "Test harness: 1/1 required tests passed.\nFailure details:\n  FAILED testing/test_assertrewrite.py::test_rewrite_infinite_recursion - Asser...", "fraction_passing": 1.0}

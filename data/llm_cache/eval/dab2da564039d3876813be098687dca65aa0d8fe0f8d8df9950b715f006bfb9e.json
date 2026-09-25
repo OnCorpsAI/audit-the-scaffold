@@ -1,0 +1,1 @@
+{"quality": 0.5, "passed": false, "detail": "harness:ftp=10/10,ptp_reg=2", "feedback": "Test harness: 10/10 required tests passed.\nFailure details:\n  FAILED test_requests.py::RequestsTestCase::test_session_pickling - assert 502...", "fraction_passing": 1.0}

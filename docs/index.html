@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit the Scaffold, Not the Checkpoint</title>
+<meta name="description" content="Frozen weights do not by themselves guarantee a saturating self-improvement trajectory: a stationarity dichotomy for recursive self-improvement in agentic coding, with machine-checked proofs and three complementary experiments.">
+<meta property="og:title" content="Audit the Scaffold, Not the Checkpoint">
+<meta property="og:description" content="A stationarity dichotomy for recursive self-improvement in agentic coding. Preprint, OnCorps, 2026.">
+<meta property="og:type" content="article">
+<script>
+  /* Set theme before paint to avoid a flash: saved choice, else OS preference. */
+  (function () {
+    try {
+      var saved = localStorage.getItem('theme');
+      var theme = (saved === 'light' || saved === 'dark')
+        ? saved
+        : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Material 3 tonal palette design tokens */
+  :root {
+    color-scheme: light;
+    --bg: #f8fafb;          /* surface — neutral-98 */
+    --fg: #121821;          /* text-primary — neutral-10 */
+    --muted: #535353;       /* text-secondary — neutral-40 (grey) */
+    --accent: #3c10ef;      /* primary-50 */
+    --accent-strong: #300cc0; /* primary-40 (focus) */
+    --accent-soft: #ece7fd; /* primary-95 */
+    --border: #cccccc;      /* neutral-variant-80 */
+    --card: #f2f4f8;        /* surface-alt — neutral-96 */
+    --code-bg: #f2f2f2;     /* neutral-variant-95 — --oc-code-background */
+    --brand-bar: #000000;   /* surface-header */
+    --canvas: #ebeff4;      /* background — neutral-94 */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.10), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.10), 0 4px 6px rgba(0,0,0,0.05);
+    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.08);
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --chip-ok-bg: #83dfc1; --chip-ok-fg: #0c3b2c;  /* status-completed */
+    --chip-ns-bg: #ffcd7a; --chip-ns-fg: #5a3d00;  /* status-pending-review */
+  }
+  /* Dark theme — mirrors _dark.scss semantic overrides ([data-theme]) */
+  [data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121821;          /* surface — neutral-10 */
+    --fg: #dee4ed;          /* text-primary — neutral-90 */
+    --muted: #a6adb5;       /* text-secondary — neutral-70 (grey) */
+    --accent: #b19ff9;      /* border-focus — primary-80 */
+    --accent-strong: #d8cffc; /* primary-90 (focus ring) */
+    --accent-soft: #180660; /* primary-20 */
+    --border: #4d4d4d;      /* border — neutral-variant-30 */
+    --card: #0b0e14;        /* surface-alt — neutral-6 */
+    --code-bg: #070a0d;     /* neutral-4 */
+    --brand-bar: #000000;
+    --canvas: #070a0d;      /* background — neutral-4 */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.40), 0 1px 2px rgba(0,0,0,0.30);
+    --shadow-lg: 0 10px 20px rgba(0,0,0,0.55), 0 4px 8px rgba(0,0,0,0.40);
+    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.45);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--fg);
+    background: var(--canvas);
+    -webkit-font-smoothing: antialiased;
+  }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-strong);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 20px; }
+  .brandbar {
+    background: var(--brand-bar);
+    padding: 14px 0;
+  }
+  .brandbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brandbar .brand-logo { display: inline-flex; line-height: 0; }
+  .brandbar .brand-logo img { height: 24px; width: auto; display: block; }
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: #fff;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .theme-toggle:hover { border-color: #fff; background: rgba(255, 255, 255, 0.10); }
+  .theme-toggle:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .theme-toggle svg { width: 18px; height: 18px; display: block; }
+  .theme-toggle .icon-sun { display: none; }
+  [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+  [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+  .canvas { padding: 36px 16px 56px; }
+  .sheet {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  header {
+    text-align: center;
+    padding: 48px 20px 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .chip {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 2px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+    vertical-align: baseline;
+  }
+  .chip-ok { background: var(--chip-ok-bg); color: var(--chip-ok-fg); }
+  .chip-ns { background: var(--chip-ns-bg); color: var(--chip-ns-fg); }
+  .badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    padding: 3px 12px;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-size: 2rem;
+    line-height: 1.25;
+    margin: 0 0 8px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .subtitle {
+    font-size: 1.12rem;
+    color: var(--muted);
+    font-weight: 400;
+    margin: 0 auto 22px;
+    max-width: 640px;
+  }
+  .authors { font-size: 1.02rem; margin: 0 0 4px; }
+  .authors a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--border); }
+  .affil { color: var(--muted); font-size: 0.95rem; margin: 2px 0; }
+  .corr { color: var(--muted); font-size: 0.82rem; margin-top: 6px; }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 26px 0 4px;
+  }
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--fg);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    font-size: 0.92rem;
+    transition: border-color .15s, color .15s, box-shadow .15s;
+  }
+  .links a:hover { border-color: var(--accent); color: var(--accent); box-shadow: var(--shadow-sm); }
+  .links a[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  main { padding: 8px 0 40px; }
+  section { padding: 30px 0; border-bottom: 1px solid var(--border); }
+  section:last-of-type { border-bottom: none; }
+  h2 {
+    font-size: 1.35rem;
+    margin: 0 0 14px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  h3 { font-size: 1.05rem; margin: 26px 0 8px; }
+  p { margin: 0 0 14px; }
+  .tldr {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    font-size: 1.05rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .abstract { color: var(--fg); }
+  ul.contrib { padding-left: 20px; margin: 0; }
+  ul.contrib li { margin-bottom: 10px; }
+  figure { margin: 20px 0; text-align: center; }
+  figure img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: #fff;
+  }
+  figcaption { font-size: 0.86rem; color: var(--muted); margin-top: 8px; text-align: left; }
+  .fig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 620px) { .fig-grid { grid-template-columns: 1fr; } }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    margin: 8px 0 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th {
+    background: var(--card);
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .note { font-size: 0.88rem; color: var(--muted); }
+  .cite-wrap { position: relative; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+    box-shadow: var(--shadow-sm);
+  }
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--fg);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  footer { padding: 28px 0 60px; color: var(--muted); font-size: 0.88rem; }
+  footer a { color: var(--accent); }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; font-size: 0.88em; font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace; }
+</style>
+</head>
+<body>
+<div class="brandbar">
+  <div class="wrap">
+    <a class="brand-logo" href="https://oncorps.io" aria-label="OnCorps">
+      <img src="assets/oncorps-logo-light.png" width="191" height="24" alt="OnCorps" decoding="async">
+    </a>
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch color theme" title="Switch color theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+    </button>
+  </div>
+</div>
+<div class="canvas">
+<div class="sheet">
+<header>
+  <div class="wrap">
+    <span class="badge">Preprint</span>
+    <h1>Audit the Scaffold, Not the Checkpoint</h1>
+    <p class="subtitle">A Stationarity Dichotomy for Recursive Self-Improvement in Agentic Coding</p>
+    <p class="authors">
+      Sebastian Bobadilla-Suarez<sup>*</sup> &nbsp;·&nbsp; Bob Suh &nbsp;·&nbsp; Ryan Fortin
+    </p>
+    <p class="affil">OnCorps &nbsp;·&nbsp; 2026</p>
+    <p class="corr"><sup>*</sup>Corresponding author · <a href="mailto:sebastian.suarez@oncorps.io">sebastian.suarez@oncorps.io</a></p>
+    <nav class="links">
+      <!-- Built from paper.tex by `make paper && make site-assets`. -->
+      <a href="assets/paper.pdf">📄 Paper (PDF)</a>
+      <!-- The colour-coded formula decoder. Kept in sync by `make site-assets`, which
+           now fails loudly if formula_supplement.pdf has not been built (`make
+           supplement`) rather than serving a stale copy. -->
+      <a href="assets/formula_supplement.pdf">∑ Formula supplement</a>
+      <!-- When posted: set href to the arXiv abstract URL, drop aria-disabled, label "📚 arXiv". -->
+      <a href="#" id="arxiv-link" aria-disabled="true" title="arXiv link coming soon">📚 arXiv (soon)</a>
+      <a href="https://github.com/OnCorpsAI/audit-the-scaffold">💻 Code</a>
+      <a href="https://github.com/OnCorpsAI/audit-the-scaffold/tree/main/lean_proofs">∎ Lean 4 proofs</a>
+      <a href="https://github.com/OnCorpsAI/audit-the-scaffold/tree/main/data">📊 Data</a>
+      <a href="#citation">❝ BibTeX</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="tldr">
+    <div class="tldr">
+      <strong>TL;DR.</strong> An auditor who checks whether a system's weights are frozen is checking
+      the wrong thing. A <em>stationarity dichotomy</em> says refinement hits strict diminishing
+      returns whenever the agent's reachable set of edits stays fixed, and can escape only if that
+      set expands, and rewriting scaffolding (tools, verifiers, decomposition) expands it
+      <em>without touching a weight</em>. So frozen weights buy an <em>eventual</em> ceiling rather
+      than stationary behaviour along the way: audit the scaffold, not the checkpoint. The same ceiling
+      binds sideways: best-of-<em>k</em> orchestration realizes the best worker's ceiling
+      <em>exactly</em>, width buying rate rather than budget, and the weighted vote that would beat
+      it needs diversity real workers lack. We reach the criterion by reading refinement as
+      functional gradient boosting, each "weak coding agent" predicting the <em>residual</em> (a
+      patch or git diff) rather than the whole solution, then measure where that reading breaks, and
+      report the breaks as a result.
+    </div>
+  </section>
+
+  <section id="abstract">
+    <h2>Abstract</h2>
+    <p class="abstract">An auditor who checks whether a system's weights are frozen is checking the
+      wrong thing. We give a criterion for when iterative self-modification runs out of room. This
+      <em>stationarity dichotomy</em> says that refinement hits strict diminishing returns whenever the
+      agent's reachable set of edits stays fixed, and can escape only if that set expands. Rewriting
+      scaffolding — tools, verifiers, decomposition — expands what an agent reaches without touching a
+      weight, so frozen weights buy an <em>eventual</em> ceiling but no stationarity
+      along the way. It also separates three regimes usually merged: search within a fixed class,
+      test-time <em>training</em> that raises the ceiling itself, and scaffold rewriting between them.
+      Audit the scaffold, not the checkpoint.</p>
+    <p class="abstract">The same ceiling binds sideways. Best-of-<em>k</em> orchestration
+      realizes the best worker's ceiling <em>exactly</em>: width buys rate, not budget. Re-consulting a
+      fixed pool has a horizon computable in advance, since either some nonnegative
+      combination of the pool already fits the work, or the edge hypothesis provably fails by round
+      log(1/ε<sub>0</sub>)/2γ², uniformly over the schedule. Exhaustive, mutually exclusive, and
+      decided by the pool alone. The one
+      arrangement that does better, a weighted vote, needs diversity real workers lack: a vote is
+      correct <em>iff</em> every task is failed by fewer than half the workers. On 6 same-family
+      configurations (30 workers across seeds) the overlap sits at its ceiling: some task defeats
+      every worker, and a majority fails 23/55 (42%) of tasks.</p>
+    <p class="abstract">We obtain the criterion by reading refinement as gradient boosting on the
+      <em>residual error</em> between draft and target, a patch or git diff, and then measure
+      where that reading breaks. Patches compose rather than standing beside each other to be voted
+      on, and failures overlap; both are properties of harnesses <em>as currently built</em> rather
+      than laws about code, and together they specify one worth building.</p>
+    <p class="abstract">Two empirical findings follow. Per-round improvement decays toward zero while
+      remaining positive, so depth saturates: the bounded regime, measured. Capability is the
+      lever that does move: over SWE-bench Lite (<em>K</em> = 55 tasks × 5 seeds, a 2×3 model-tier ×
+      feedback-mode ablation) the capability effect is large and significant (partial η² = 0.497,
+      <em>p</em> &lt; 0.0001) while feedback mode and the interaction are honestly-underpowered
+      nulls (11% / 17% power at this <em>K</em>). And 401 production agentic-coding sessions place
+      current practice in the bounded regime, churn decaying geometrically toward a survivor-ratio
+      ceiling, measured on the 70 sessions long enough to show a trend, and a signature
+      <em>shared</em> with a 9,395-session pre-AI human baseline, so it establishes the regime
+      without identifying its cause. Separating those requires holding weights fixed while varying
+      the scaffold, which is the experiment this data argues for.</p>
+  </section>
+
+  <section id="contributions">
+    <h2>What this paper does — and does not — establish</h2>
+    <p>The contribution is <em>a structural criterion, the invariant it says to track, and a
+      build specification</em>, not a confirmed empirical law.</p>
+    <p class="note">Two limits scope everything below. The criterion is checkable only through a
+      scaffold-immutability proxy, not a general estimator for the hypothesis class, which we lack,
+      and the reasoning/tool-creation boundary that proxy rests on is not operationally sharp. And
+      the production dynamics are <em>consistent with</em> the bounded regime without establishing
+      that a fixed reachable class <em>causes</em> them: the same churn-decay shape appears in a
+      pre-AI human baseline, so Finding 1 cannot carry mechanistic weight. The decisive experiment
+      holds weights fixed while varying the scaffold, and is motivated here rather than delivered.</p>
+    <p>Within those limits, we claim to establish:</p>
+    <ul class="contrib">
+      <li><strong>Audit the scaffold, not the checkpoint.</strong> The <em>refinement game</em>
+        (monotone improvement with saturation) and the <em>stationarity dichotomy</em> give strict
+        diminishing returns whenever the reachable edit set stays fixed. Since rewriting scaffolding
+        expands that set without touching a weight, frozen weights buy an <em>eventual</em> ceiling
+        but no stationarity along the way. The criterion runs one way only: escape
+        needs a <em>uniform</em> edge, so self-expansion is necessary and not sufficient, and an
+        auditor who flags every self-modifying scaffold will mostly flag bounded systems.</li>
+      <li><strong>The same ceiling binds sideways.</strong> Best-of-<em>k</em> selection
+        realizes max<sub>i</sub> <em>V*</em>(<em>W</em>, <em>C<sub>i</sub></em>) <em>exactly</em>, an
+        unconditional equality: width buys rate, not budget. We had conjectured a strict inequality
+        here, on the intuition that a winning worker varying with the instance should cost something.
+        The counterexample is two disjoint singleton classes with equal values, and Lean found it
+        before we did, which is the concrete thing the formalization bought. The weighted vote that
+        would beat selection needs diversity real workers lack. On our pool failure overlap sits at
+        its maximum <em>m*</em> = <em>k</em>: some task defeats every worker, and a majority fails
+        42% of tasks. That second number is not merely suggestive, because an unweighted vote is
+        correct <em>iff</em> every task is failed by fewer than half the workers, an exact condition
+        rather than a sufficient one and machine-checked in Lean, so the majority-failure rate
+        <em>is</em> the vote's error. No confidence interval is needed for a statistic sitting at its
+        maximum. These are <em>same-family</em> workers: one vendor, two tiers and three prompt
+        variants at temperature 0.25, and since the feedback-mode contrast is itself null, the pool's
+        <em>effective</em> diversity is nearer two configurations than six. Low-temperature
+        resampling of a single vendor is about as weak a test as one could field, so the result is
+        close to a lower bound. It settles the pessimistic half and cannot speak to the optimistic
+        one. Whether genuinely different model families clear the bar is the open question for anyone
+        building a voting orchestrator, and this data cannot reach it.</li>
+      <li><strong>Where deployed loops break boosting.</strong> They fail its preconditions in two
+        places we locate and measure: patches compose rather than standing beside each other to be
+        voted on, and failures overlap too heavily for a vote to exploit. Neither is a law about
+        code; both are engineering choices, so read prescriptively they specify a harness, unbuilt
+        and ours included, precisely enough to build from: retain all <em>T</em> proposals, maintain
+        an explicit distribution over specifications, and enforce <em>m*</em> &lt; <em>k</em>/2.</li>
+      <li><strong>Re-consulting a fixed pool has a computable horizon.</strong> Run boosting over a
+        fixed pool of <em>k</em> workers under any schedule: unless some nonnegative combination of
+        the pool already fits the sample, the edge hypothesis provably fails by round
+        log(1/ε₀)/2γ² — and if it does fit, some member keeps an edge γ = θ/2<em>S</em> against
+        <em>every</em> distribution, fixed before the distribution is chosen. A pool is therefore
+        not a renewable resource, and which side of the dichotomy it falls on is a property of the
+        scaffold rather than of any weight.</li>
+      <li><strong>Transferred classical results.</strong> The AdaBoost training-error bound,
+        exponential convergence, margin generalization, and forward-stagewise equivalence carry
+        over to a <em>hypothetical</em> spec-reweighting loop. We claim no novelty for these and
+        state explicitly that no deployed loop, including our own, runs that algorithm. All
+        algebraic steps are machine-checked in <strong>Lean 4</strong> (Mathlib), with zero
+        <code>sorry</code>.</li>
+    </ul>
+    <p>The theorems behind the dichotomy are elementary: a bounded-monotone-sequence argument and
+      the Archimedean property. That is the point. The claim is that the reachable class is the
+      right invariant, not that saturation was hard to prove.</p>
+  </section>
+
+  <section id="part-a">
+    <h2>Part A — Stylized theoretical validation (decision stumps)</h2>
+    <p>A controlled setting using SWE-bench problem-statement TF-IDF features and decision-stump
+      weak learners confirms the transferred boosting <em>mechanics</em>: training-error decay,
+      generalization, refinement-game saturation, and margin shift.</p>
+    <div class="fig-grid">
+      <figure>
+        <img src="assets/figures/swe_fig1_training_error.png" alt="Training error vs. number of weak coding agents">
+        <figcaption>Training error vs. number of weak coding agents for four target edges γ;
+          empirical error tracks the e<sup>−2γ²T</sup> bound.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/figures/swe_fig2_generalization.png" alt="Generalization: train vs. test error">
+        <figcaption>Train vs. test error over boosting rounds; final test error vs. training-set
+          size (O(√(d/N))).</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/figures/swe_fig3_refinement_game.png" alt="Code quality under the refinement game">
+        <figcaption>Code quality under the refinement game: monotone increase with diminishing
+          returns, bounded below the optimum.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/figures/swe_fig4_margin_distribution.png" alt="Margin distribution over boosting rounds">
+        <figcaption>Margin distribution over rounds; negative-margin mass collapses.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="part-b">
+    <h2>Part B — LLM refinement on SWE-bench Lite (regime characterization)</h2>
+    <p>A real coding agent (mini-swe-agent) run over <em>K</em> = 55 SWE-bench Lite tasks × 5
+      seeds, in a controlled 2×3 model-tier × feedback-mode ablation (independent / blind /
+      diagnostic self-refinement) against a digest-pinned Docker harness, <em>characterizes the
+      theory's regimes</em> rather than testing it. The model-capability effect is large and
+      significant (partial η² = 0.497, <em>p</em> &lt; 0.0001) — the stronger tier solves
+      85–89% of tasks vs. 44–49% for the weaker tier. The feedback-mode and interaction effects
+      are honestly-underpowered nulls (11% / 17% power at this <em>K</em>; 80% power would need
+      roughly 7–8× the sample), not evidence that feedback content doesn't matter. What places
+      Part B in the bounded regime is per-round improvement on the running best decaying toward zero
+      (0.097 → 0.033 for the weaker tier, 0.156 → 0.029 for the stronger): improvement continues and
+      shrinks, which is saturation measured rather than argued.</p>
+    <p class="note"><strong>The pooled edge is an artifact of the harness, and reads backwards.</strong>
+      The experiment stops calling the model on the round a task first passes and back-fills the
+      remaining rounds with a hardcoded perfect score, so those rounds record no patch, no
+      evaluation and no model call — 27.6% of the weaker tier's matrix and 53.9% of the stronger
+      tier's. Because the edge statistic scores an unchanged round at −½, it charges every
+      back-filled cell as a failure to improve, which tracks the solve rate rather than the
+      refinement dynamics: the stronger tier back-fills more and therefore posts a <em>more</em>
+      negative pooled edge while being the better refiner on every cell where a call was actually
+      made. We report it for disclosure only and rely on the measured cells, where the stronger
+      tier's first two intervals include zero — so we do not claim it fails the weak-learning
+      condition. An unchanged round is in any case an abstention rather than an error: under
+      Schapire &amp; Singer's confidence-rated bound the transferred product still descends, to 0.81
+      and 0.67 over three rounds.</p>
+    <p class="note"><strong>Two further qualifications.</strong>
+      First, the τ = 0.6 solve threshold counts the <em>fraction</em> of
+      <code>FAIL_TO_PASS</code>/<code>PASS_TO_PASS</code> tests passing, so those rates are
+      <em>not</em> SWE-bench resolve rates and should not be read against published ones. At
+      SWE-bench's own bar (τ = 1.0, every test passing) the identical aggregation gives 71–75% for
+      the stronger tier and 29–38% for the weaker one: the tier gap survives and neither tier sits
+      at a floor. Nothing else moves with τ, since the ANOVA's dependent variable is continuous
+      quality and γ<sub>t</sub> compares consecutive rounds directly. Second, what the loop mostly does is
+      nothing: 80–95% of transitions leave quality unchanged overall, and 52–59% (weaker tier) /
+      13–21% (stronger tier) once the back-filled rounds are removed, against at most 2.9% lowering
+      it. Refinement turns idempotent, not harmful — which is a different claim from the
+      anti-correlation that ε &gt; ½ means in AdaBoost.</p>
+    <figure>
+      <img src="assets/figures/llm_fig_overlap.png" alt="How many of the 30 workers fail each task, against the k/2 threshold a correct vote requires">
+      <figcaption><strong>The diversity a vote would need is absent.</strong> Left: how many of the
+        <em>k</em> = 30 workers fail each task. A correct unweighted vote needs <em>every</em> task
+        strictly left of the dashed <em>k</em>/2 line; the mass at or right of it is exactly the
+        vote's error, and the spike at <em>m<sub>i</sub></em> = <em>k</em> is total overlap — some
+        task no worker solves. Right: per round, the vote's error against the mean per-worker error
+        and the Markov bound, each with a 95% bootstrap interval. Those intervals are
+        marginal and they overlap throughout; the paired vote-versus-worker comparison is
+        reported in the appendix, which attributes its sign to mixing two capability tiers.
+        These are same-family workers — 6 configurations across 5 seeds at
+        temperature 0.25 — so this measures the pessimistic half only.</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/figures/llm_fig_edge_collapse.png" alt="Per-round edge on measured cells versus the pooled estimate, and the abstaining convergence bound">
+      <figcaption>Part B per-round edge. <strong>Left:</strong> bars are γ<sub>t</sub> over cells
+        where a model call actually happened; grey crosses are the pooled estimate over all cells,
+        and the gap between them is the back-filling of rounds after a task first passes.
+        <strong>Right:</strong>
+        observed error against the abstaining bound ∏<sub>s</sub>Z<sub>s</sub>, which descends,
+        and the binary form, which pins at 1.0.</figcaption>
+    </figure>
+  </section>
+
+  <section id="part-c">
+    <h2>Part C — Refinement dynamics in production (the regime, not its cause)</h2>
+    <p>401 real production agentic-coding sessions — 1,211 Claude-authored commits across 23 of
+      OnCorps's production repositories. Only structural git metrics are extracted (diff sizes,
+      commit counts, model tier via <code>Co-Authored-By: Claude</code> trailers) — no code
+      content, file paths, or commit messages. Churn decays geometrically across commits
+      (ρ ≈ 0.77) and sessions converge to a measurable survivor-ratio ceiling: 70.0% of
+      multi-commit sessions (<em>n</em> ≥ 5) show decreasing churn, median late/early ratio 0.49,
+      and a commit-order permutation test rejects the commit-size-heterogeneity null
+      (<em>p</em> &lt; 0.0001, <em>n</em> = 70).</p>
+    <p class="note"><strong>What this does and does not establish.</strong> The descriptive claim
+      is the safety-relevant one: current frozen-weight agentic coding sits in the bounded regime,
+      refining like a saturating editor rather than compounding like a runaway process. It does not
+      establish the <em>mechanism</em>. Applying the identical pipeline to a pre-AI window yields
+      9,395 human sessions whose churn-decay <em>shape</em> is essentially the same
+      (ρ<sub>human</sub> = 0.86 vs. AI-tier ρ ≈ 0.77) — geometric front-loading is not AI-specific,
+      which is precisely why this finding cannot carry mechanistic weight. The survivor-ratio
+      <em>level</em> does differ (ψ<sub>human</sub> ≈ 0.39 vs. ≈ 0.55), and unlike the tier contrast
+      that effect exceeds the repository and developer variance components after adjustment — but it
+      is an era comparison, not a controlled one. Note also that the churn analysis rests on the 70
+      sessions with ≥ 5 commits: 50.9% of sessions are single-commit.</p>
+    <div class="fig-grid">
+      <figure>
+        <img src="assets/figures/emp_fig1_churn_trajectories.png" alt="Within-session churn trajectories">
+        <figcaption>Normalized within-session churn trajectories; churn concentrates in the
+          first commit and decays geometrically.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/figures/emp_fig2_survivor_by_tier.png" alt="Survivor ratio by model tier">
+        <figcaption>Survivor ratio by model tier (Opus ψ ≈ 0.55, n = 158; Sonnet ψ ≈ 0.55,
+          n = 177). Null, robust to a multilevel de-confound.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/figures/emp_fig3_empirical_vs_simulated.png" alt="Empirical vs. simulated survivor-ratio distribution">
+        <figcaption>Empirical vs. simulated survivor-ratio distribution (fitted geometric
+          log-normal, ρ = 0.77, σ = 2.39, π<sub>pure</sub> = 0.071); KS tests annotated. The
+          in-sample KS rejects exact distributional equality — the model captures the coarse shape
+          only.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/figures/emp_fig4_session_length_dist.png" alt="Session-length distribution">
+        <figcaption>Session-length distribution (commits/session), log-normal overlay; median 1,
+          mean 3.0, max 45, with 50.9% single-commit.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="results">
+    <h2>Key results at a glance</h2>
+    <table>
+      <thead>
+        <tr><th>Quantity</th><th>Value</th><th>Reading</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Model-capability effect (Part B ANOVA)</td><td class="num">η² = 0.497, p &lt; 0.0001</td><td>Huge, significant &nbsp;<span class="chip chip-ok">confirmed</span></td></tr>
+        <tr><td>Feedback-mode / interaction effect</td><td class="num">11% / 17% power</td><td>Honestly underpowered at K=55 &nbsp;<span class="chip chip-ns">not evidence of zero effect</span></td></tr>
+        <tr><td>Solve rate, τ = 0.6 (fractional passing)</td><td class="num">85–89% vs 44–49%</td><td>Stronger vs weaker tier &nbsp;<span class="chip chip-ns">not a SWE-bench resolve rate</span></td></tr>
+        <tr><td>Solve rate, τ = 1.0 (SWE-bench resolved)</td><td class="num">71–75% vs 29–38%</td><td>Tier gap survives the stricter bar; neither tier at a floor</td></tr>
+        <tr><td>Back-filled cells (no model call)</td><td class="num">27.6% / 53.9%</td><td>Weaker / stronger tier — rounds after a task first passes &nbsp;<span class="chip chip-ns">not measurements</span></td></tr>
+        <tr><td>Edge γ<sub>t</sub>, t ≥ 1, measured cells</td><td class="num">−0.35 → −0.41 vs −0.08 → −0.28</td><td>Weaker vs stronger tier; the stronger tier's first two CIs include zero &nbsp;<span class="chip chip-ns">condition not rejected</span></td></tr>
+        <tr><td>Edge γ<sub>t</sub>, pooled over all cells</td><td class="num">CIs strictly &lt; 0</td><td>Disclosed aggregate — tracks the solve rate, not the dynamics &nbsp;<span class="chip chip-ns">artifact</span></td></tr>
+        <tr><td>Abstaining bound ∏<sub>s</sub>Z<sub>s</sub></td><td class="num">0.81 / 0.67</td><td>Weaker / stronger tier over 3 rounds — descends, unlike the binary form</td></tr>
+        <tr><td>Per-round improvement (running best)</td><td class="num">0.097→0.033 / 0.156→0.029</td><td>Decays toward zero &nbsp;<span class="chip chip-ok">saturation measured</span></td></tr>
+        <tr><td>Majority-failure rate (6 configs × 5 seeds)</td><td class="num">23/55 (42%)</td><td>Is the unweighted vote's error; m* = 30 = k &nbsp;<span class="chip chip-ns">diversity absent</span></td></tr>
+        <tr><td>Geometric churn decay (Part C)</td><td class="num">ρ ≈ 0.77</td><td><span class="chip chip-ok">consistent</span> with the bounded regime; n = 70 sessions</td></tr>
+        <tr><td>Capability gap (survivor-ratio ψ)</td><td class="num">0.55 vs 0.55</td><td>Opus (n=158) vs Sonnet (n=177); gap = −0.003</td></tr>
+        <tr><td>Gap significance</td><td class="num">p = 0.93 / 0.91</td><td>Permutation / MWU; 95% CI [−0.075, +0.069] &nbsp;<span class="chip chip-ns">not significant</span></td></tr>
+        <tr><td>Gap after multilevel de-confound</td><td class="num">coef = +0.009, p = 0.82</td><td>Adjusted for task type, repository, developer &nbsp;<span class="chip chip-ns">bounded null</span></td></tr>
+        <tr><td>Front-loaded-editing null</td><td class="num">p &lt; 0.0001</td><td>Commit-order permutation rejects the null &nbsp;<span class="chip chip-ok">rejected</span></td></tr>
+        <tr><td>Pre-AI human baseline</td><td class="num">ρ = 0.86, ψ ≈ 0.39</td><td>9,395 sessions: same shape, different level &nbsp;<span class="chip chip-ns">shape is not AI-specific</span></td></tr>
+        <tr><td>Session length</td><td class="num">1 / 3.0 / 45</td><td>Median / mean / max commits per session; 50.9% single-commit</td></tr>
+      </tbody>
+    </table>
+    <p class="note">The observational dynamics are <em>consistent with</em> the predicted saturation
+      without confirming it, and the shared human signature is why. One tension we report rather
+      than resolve: a survivor-ratio proxy too coarse to register the capability difference Part B
+      measures at η² = 0.497 is correspondingly weak evidence for the regime it <em>does</em>
+      register. The theory is offered as a structural criterion and the invariant it says to track,
+      not a confirmed empirical law.</p>
+  </section>
+
+  <section id="citation">
+    <h2>Citation</h2>
+    <div class="cite-wrap">
+      <button class="copy-btn" id="copyBtn" type="button">Copy</button>
+<pre id="bibtex">@article{bobadillasuarez2026agentic,
+  title   = {Audit the Scaffold, Not the Checkpoint: A Stationarity Dichotomy
+             for Recursive Self-Improvement in Agentic Coding},
+  author  = {Bobadilla-Suarez, Sebastian and Suh, Bob and Fortin, Ryan},
+  year    = {2026},
+  note    = {Preprint},
+  institution = {OnCorps}
+}</pre>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>License.</strong> Code (Python, Lean, shell, configuration) — MIT.
+      Paper, figures, and anonymized data — Creative Commons Attribution 4.0 International
+      (CC BY 4.0). Copyright © 2026 OnCorps.</p>
+    <p><strong>AI authorship disclosure.</strong> Portions of this paper and the accompanying
+      code were drafted with the assistance of large language models (Claude Opus and Claude
+      Sonnet). All results were verified by human authors, and all empirical claims were checked
+      against the committed data and figures. No AI system is listed as an author.</p>
+  </footer>
+
+</main>
+</div>
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById('copyBtn');
+    var pre = document.getElementById('bibtex');
+    if (!btn || !pre) return;
+    btn.addEventListener('click', function () {
+      var text = pre.textContent;
+      navigator.clipboard.writeText(text).then(function () {
+        btn.textContent = 'Copied!';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1600);
+      }, function () {
+        btn.textContent = 'Press ⌘/Ctrl+C';
+      });
+    });
+  })();
+
+  (function () {
+    var toggle = document.getElementById('themeToggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', function () {
+      var current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+    });
+  })();
+</script>
+</body>
+</html>

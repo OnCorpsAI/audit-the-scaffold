@@ -1,0 +1,1 @@
+{"quality": 0.5, "passed": false, "detail": "harness:ftp=1/1,ptp_reg=1", "feedback": "Test harness: 1/1 required tests passed.\nFailure details:\n  FAILED tests/test_environment_indexentries.py::test_create_pair_index - Asser...", "fraction_passing": 1.0}

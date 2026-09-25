@@ -1,0 +1,197 @@
+{
+  "full_pool": {
+    "n_tasks_observed": 55,
+    "tasks": [
+      "astropy__astropy-12907",
+      "astropy__astropy-14182",
+      "astropy__astropy-14365",
+      "astropy__astropy-14995",
+      "astropy__astropy-6938",
+      "astropy__astropy-7746",
+      "matplotlib__matplotlib-18869",
+      "matplotlib__matplotlib-22711",
+      "matplotlib__matplotlib-22835",
+      "matplotlib__matplotlib-23299",
+      "matplotlib__matplotlib-23314",
+      "matplotlib__matplotlib-23476",
+      "matplotlib__matplotlib-23562",
+      "mwaskom__seaborn-2848",
+      "mwaskom__seaborn-3010",
+      "mwaskom__seaborn-3190",
+      "mwaskom__seaborn-3407",
+      "pallets__flask-4045",
+      "pallets__flask-4992",
+      "pallets__flask-5063",
+      "psf__requests-1963",
+      "psf__requests-2148",
+      "psf__requests-2674",
+      "psf__requests-3362",
+      "pydata__xarray-3364",
+      "pydata__xarray-4094",
+      "pydata__xarray-4248",
+      "pydata__xarray-4493",
+      "pydata__xarray-5131",
+      "pylint-dev__pylint-5859",
+      "pylint-dev__pylint-6506",
+      "pylint-dev__pylint-7080",
+      "pylint-dev__pylint-7114",
+      "pylint-dev__pylint-7228",
+      "pylint-dev__pylint-7993",
+      "pytest-dev__pytest-11143",
+      "pytest-dev__pytest-11148",
+      "pytest-dev__pytest-5103",
+      "pytest-dev__pytest-5221",
+      "pytest-dev__pytest-5413",
+      "pytest-dev__pytest-5495",
+      "pytest-dev__pytest-5692",
+      "scikit-learn__scikit-learn-10297",
+      "scikit-learn__scikit-learn-10508",
+      "scikit-learn__scikit-learn-10949",
+      "scikit-learn__scikit-learn-11040",
+      "scikit-learn__scikit-learn-11281",
+      "scikit-learn__scikit-learn-12471",
+      "scikit-learn__scikit-learn-13142",
+      "sphinx-doc__sphinx-10325",
+      "sphinx-doc__sphinx-10451",
+      "sphinx-doc__sphinx-11445",
+      "sphinx-doc__sphinx-7686",
+      "sphinx-doc__sphinx-7738",
+      "sphinx-doc__sphinx-7975"
+    ],
+    "anova": {
+      "A": {
+        "F": 53.45877256690514,
+        "df": [
+          1,
+          54
+        ],
+        "p": 1.2850640627995392e-09,
+        "partial_eta2": 0.49748169730508557,
+        "cohen_f": 0.9949760146644251
+      },
+      "B": {
+        "F": 0.5011783816459333,
+        "df": [
+          2,
+          108
+        ],
+        "p": 0.6072182885637389,
+        "partial_eta2": 0.009195734780932965,
+        "cohen_f": 0.09633836796205007
+      },
+      "AB": {
+        "F": 0.8146434199343933,
+        "df": [
+          2,
+          108
+        ],
+        "p": 0.4454992663591522,
+        "partial_eta2": 0.014861784536176198,
+        "cohen_f": 0.12282503514367224
+      }
+    },
+    "bootstrap_power": {
+      "55": {
+        "B": 0.10656666666666667,
+        "AB": 0.16576666666666667
+      },
+      "75": {
+        "B": 0.13513333333333333,
+        "AB": 0.21886666666666665
+      },
+      "100": {
+        "B": 0.1775,
+        "AB": 0.2935333333333333
+      },
+      "150": {
+        "B": 0.2673,
+        "AB": 0.42356666666666665
+      },
+      "200": {
+        "B": 0.36793333333333333,
+        "AB": 0.5355666666666666
+      },
+      "300": {
+        "B": 0.5623333333333334,
+        "AB": 0.7192333333333333
+      },
+      "400": {
+        "B": 0.7210666666666666,
+        "AB": 0.8407666666666667
+      },
+      "430": {
+        "B": 0.7592666666666666,
+        "AB": 0.8705666666666667
+      },
+      "500": {
+        "B": 0.829,
+        "AB": 0.9122
+      },
+      "600": {
+        "B": 0.9087,
+        "AB": 0.9559666666666666
+      },
+      "700": {
+        "B": 0.9495666666666667,
+        "AB": 0.9777666666666667
+      },
+      "750": {
+        "B": 0.9642,
+        "AB": 0.9825333333333334
+      },
+      "800": {
+        "B": 0.9729333333333333,
+        "AB": 0.9874
+      },
+      "900": {
+        "B": 0.9864666666666667,
+        "AB": 0.9943666666666666
+      },
+      "1000": {
+        "B": 0.9934,
+        "AB": 0.9973666666666666
+      }
+    },
+    "model_effect_ci": {
+      "observed_partial_eta2": 0.49748169730508557,
+      "observed_cohen_f": 0.9949760146644251,
+      "eta2_ci_low": 0.3524675828618672,
+      "eta2_ci_high": 0.6351792716743163,
+      "cohen_f_ci_low": 0.7377833203346829,
+      "cohen_f_ci_high": 1.3194969961048721,
+      "n_tasks": 55
+    }
+  },
+  "running_best_dv": {
+    "A": {
+      "F": 57.019533969240946,
+      "df": [
+        1,
+        54
+      ],
+      "p": 5.250498706717811e-10,
+      "partial_eta2": 0.5135991111711815,
+      "cohen_f": 1.0275783647618726
+    },
+    "B": {
+      "F": 0.6611173330064903,
+      "df": [
+        2,
+        108
+      ],
+      "p": 0.5183507911897983,
+      "partial_eta2": 0.012094837523697713,
+      "cohen_f": 0.11064770026617934
+    },
+    "AB": {
+      "F": 0.6260422924297651,
+      "df": [
+        2,
+        108
+      ],
+      "p": 0.5366328484129004,
+      "partial_eta2": 0.011460509789055755,
+      "cohen_f": 0.10767253960846465
+    }
+  }
+}

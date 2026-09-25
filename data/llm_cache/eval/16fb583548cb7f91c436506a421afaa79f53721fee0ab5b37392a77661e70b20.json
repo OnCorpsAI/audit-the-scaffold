@@ -1,0 +1,1 @@
+{"quality": 0.0, "passed": false, "detail": "harness:ftp=0/1,ptp_reg=0", "feedback": "Test harness: 0/1 required tests passed.\nThese required tests still fail (must go FAIL \u2192 PASS):\n  astropy/nddata/mixins/tests/test_ndarithmetic.py::test_nddata_bitmask_arithmetic\nRevise your patch to make the failing required tests pass.", "fraction_passing": 0.0}

@@ -1,0 +1,421 @@
+{
+  "control": {
+    "since": "2021-11-08",
+    "until": "2022-09-19",
+    "n_repos": 122,
+    "n_developers": 62,
+    "n_sessions": 9395,
+    "n_commits": 17694,
+    "tau_human": 0.38962258953168044,
+    "n_human_nonpure": 7986,
+    "rho": 0.863400017081076,
+    "rho_ci": [
+      0.8178984970833055,
+      0.911853547184562
+    ],
+    "sigma": 2.2405957807630386
+  },
+  "ai_tier": {
+    "n_repos": 23,
+    "n_developers": 20,
+    "n_sessions": 401,
+    "n_commits": 1211
+  },
+  "human_vs_opus": {
+    "gap": -0.15978247375945892,
+    "p_value": 0.0002,
+    "tau_tier": 0.5494050632911394,
+    "n_tier": 158,
+    "n_human": 7986,
+    "mm_coef": 0.14536912275853958,
+    "mm_p": 0.0008203224289329578,
+    "mm_ci": [
+      0.060213281258954116,
+      0.23052496425812505
+    ],
+    "mm_vc_repo": 0.1492069503414638,
+    "mm_vc_developer": 0.015685532660321647,
+    "mm_converged": true
+  },
+  "human_vs_sonnet": {
+    "gap": -0.1628406873044777,
+    "p_value": 0.0002,
+    "tau_tier": 0.5524632768361581,
+    "n_tier": 177,
+    "n_human": 7986,
+    "mm_coef": 0.15382546599042107,
+    "mm_p": 0.00025580364091146434,
+    "mm_ci": [
+      0.07136890984342069,
+      0.23628202213742144
+    ],
+    "mm_vc_repo": 0.13956039620888058,
+    "mm_vc_developer": 0.018046464700915626,
+    "mm_converged": true
+  },
+  "composition": {
+    "control": {
+      "n_sessions": 9395,
+      "single_commit_pct": 63.93826503459287,
+      "tau_all": 0.38962258953168044,
+      "tau_multi": 0.4346474888747616
+    },
+    "ai_tier": {
+      "n_sessions": 401,
+      "single_commit_pct": 50.87281795511222,
+      "tau_all": 0.5443678160919541,
+      "tau_multi": 0.592639344262295
+    }
+  },
+  "tier_composition": {
+    "n_sessions": 401,
+    "by_tier": {
+      "haiku": 9,
+      "opus": 184,
+      "sonnet": 203,
+      "unknown": 5
+    },
+    "n_contrasted": 387,
+    "n_excluded": 14
+  },
+  "paired_within_developer": {
+    "floor_0": {
+      "n_pairs": 12,
+      "min_commits_per_side": 0,
+      "n_b_greater": 9,
+      "n_nonzero": 12,
+      "sign_p": 0.14599609375,
+      "wilcoxon_p": 0.0341796875,
+      "median_delta": 0.11674503248644191,
+      "delta_min": -0.07846543062200956,
+      "delta_max": 0.44664957264957267,
+      "top_volume_pair": {
+        "developer": "dev_5c6355de",
+        "n_commits_a": 322,
+        "n_commits_b": 257,
+        "delta": 0.3198116531165311
+      },
+      "max_volume_ratio": 33.0
+    },
+    "floor_15": {
+      "n_pairs": 10,
+      "min_commits_per_side": 15,
+      "n_b_greater": 8,
+      "n_nonzero": 10,
+      "sign_p": 0.109375,
+      "wilcoxon_p": 0.02734375,
+      "median_delta": 0.11674503248644191,
+      "delta_min": -0.07846543062200956,
+      "delta_max": 0.44664957264957267,
+      "top_volume_pair": {
+        "developer": "dev_5c6355de",
+        "n_commits_a": 322,
+        "n_commits_b": 257,
+        "delta": 0.3198116531165311
+      },
+      "max_volume_ratio": 32.35294117647059
+    },
+    "floor_30": {
+      "n_pairs": 7,
+      "min_commits_per_side": 30,
+      "n_b_greater": 5,
+      "n_nonzero": 7,
+      "sign_p": 0.453125,
+      "wilcoxon_p": 0.21875,
+      "median_delta": 0.055512426752879374,
+      "delta_min": -0.07846543062200956,
+      "delta_max": 0.3198116531165311,
+      "top_volume_pair": {
+        "developer": "dev_5c6355de",
+        "n_commits_a": 322,
+        "n_commits_b": 257,
+        "delta": 0.3198116531165311
+      },
+      "max_volume_ratio": 17.627118644067796
+    },
+    "floor_50": {
+      "n_pairs": 4,
+      "min_commits_per_side": 50,
+      "n_b_greater": 2,
+      "n_nonzero": 4,
+      "sign_p": 1.0,
+      "wilcoxon_p": NaN,
+      "median_delta": 0.0170705676521814,
+      "delta_min": -0.07846543062200956,
+      "delta_max": 0.3198116531165311,
+      "top_volume_pair": {
+        "developer": "dev_5c6355de",
+        "n_commits_a": 322,
+        "n_commits_b": 257,
+        "delta": 0.3198116531165311
+      },
+      "max_volume_ratio": 17.627118644067796
+    }
+  },
+  "within_era": {
+    "since": "2025-09-18",
+    "until": "2026-12-31",
+    "ai": {
+      "n_sessions": 487,
+      "n_commits": 1493,
+      "n_developers": 22,
+      "tau": 0.540123786407767
+    },
+    "nonai": {
+      "n_sessions": 1874,
+      "n_commits": 4914,
+      "n_developers": 22,
+      "tau": 0.41873562537048015
+    },
+    "paired": {
+      "floor_0": {
+        "n_pairs": 21,
+        "min_commits_per_side": 0,
+        "n_b_greater": 14,
+        "n_nonzero": 21,
+        "sign_p": 0.18924713134765625,
+        "wilcoxon_p": 0.02157115936279297,
+        "median_delta": 0.12712317747611868,
+        "delta_min": -0.40086363636363637,
+        "delta_max": 0.6865,
+        "top_volume_pair": {
+          "developer": "dev_74e2824f",
+          "n_commits_a": 1340,
+          "n_commits_b": 444,
+          "delta": 0.12712317747611868
+        },
+        "max_volume_ratio": 73.0
+      },
+      "floor_15": {
+        "n_pairs": 14,
+        "min_commits_per_side": 15,
+        "n_b_greater": 10,
+        "n_nonzero": 14,
+        "sign_p": 0.1795654296875,
+        "wilcoxon_p": 0.0107421875,
+        "median_delta": 0.09418300154159134,
+        "delta_min": -0.07778165374677004,
+        "delta_max": 0.3319088090932576,
+        "top_volume_pair": {
+          "developer": "dev_74e2824f",
+          "n_commits_a": 1340,
+          "n_commits_b": 444,
+          "delta": 0.12712317747611868
+        },
+        "max_volume_ratio": 19.8
+      },
+      "floor_30": {
+        "n_pairs": 9,
+        "min_commits_per_side": 30,
+        "n_b_greater": 6,
+        "n_nonzero": 9,
+        "sign_p": 0.5078125,
+        "wilcoxon_p": 0.09765625,
+        "median_delta": 0.06124282560706401,
+        "delta_min": -0.07778165374677004,
+        "delta_max": 0.3319088090932576,
+        "top_volume_pair": {
+          "developer": "dev_74e2824f",
+          "n_commits_a": 1340,
+          "n_commits_b": 444,
+          "delta": 0.12712317747611868
+        },
+        "max_volume_ratio": 7.310077519379845
+      },
+      "floor_50": {
+        "n_pairs": 7,
+        "min_commits_per_side": 50,
+        "n_b_greater": 5,
+        "n_nonzero": 7,
+        "sign_p": 0.453125,
+        "wilcoxon_p": 0.109375,
+        "median_delta": 0.12712317747611868,
+        "delta_min": -0.07778165374677004,
+        "delta_max": 0.3319088090932576,
+        "top_volume_pair": {
+          "developer": "dev_74e2824f",
+          "n_commits_a": 1340,
+          "n_commits_b": 444,
+          "delta": 0.12712317747611868
+        },
+        "max_volume_ratio": 7.310077519379845
+      }
+    }
+  },
+  "model_versions": {
+    "haiku": {
+      "n_trailer_strings": 1,
+      "versions": [
+        4.5
+      ]
+    },
+    "opus": {
+      "n_trailer_strings": 8,
+      "versions": [
+        4.5,
+        4.6,
+        4.7,
+        4.8,
+        5.0
+      ]
+    },
+    "sonnet": {
+      "n_trailer_strings": 4,
+      "versions": [
+        4.5,
+        4.6,
+        5.0
+      ]
+    }
+  },
+  "release": {
+    "datasets": [
+      "company_control_sessions.json",
+      "company_sessions.json",
+      "company_within_era_ai_sessions.json",
+      "company_within_era_nonai_sessions.json"
+    ],
+    "n_datasets": 4,
+    "n_developers": 71
+  },
+  "capability": {
+    "family": {
+      "trend": {
+        "spearman_rho": 0.01231895197962408,
+        "spearman_p": 0.8201702872519802,
+        "n_sessions": 343,
+        "n_cells": 8,
+        "ordering": "family",
+        "include_haiku": true,
+        "ranked_cells": [
+          "haiku4.5",
+          "sonnet4.5",
+          "sonnet4.6",
+          "sonnet5",
+          "opus4.5",
+          "opus4.6",
+          "opus4.7",
+          "opus4.8"
+        ]
+      },
+      "mixed": {
+        "n_sessions": 343,
+        "n_repos": 23,
+        "n_developers": 19,
+        "n_cells": 8,
+        "ordering": "family",
+        "include_haiku": true,
+        "converged": true,
+        "cap_coef": 0.003068537683687171,
+        "cap_p": 0.7526288234027958,
+        "cap_ci": [
+          -0.016013636611074262,
+          0.022150711978448607
+        ],
+        "vc_repo": 0.14795908683708747,
+        "vc_developer": 0.05832336467976936
+      }
+    },
+    "version": {
+      "trend": {
+        "spearman_rho": -0.008361505496616182,
+        "spearman_p": 0.8773774162769941,
+        "n_sessions": 343,
+        "n_cells": 8,
+        "ordering": "version",
+        "include_haiku": true,
+        "ranked_cells": [
+          "haiku4.5",
+          "sonnet4.5",
+          "opus4.5",
+          "sonnet4.6",
+          "opus4.6",
+          "opus4.7",
+          "opus4.8",
+          "sonnet5"
+        ]
+      },
+      "mixed": {
+        "n_sessions": 343,
+        "n_repos": 23,
+        "n_developers": 19,
+        "n_cells": 8,
+        "ordering": "version",
+        "include_haiku": true,
+        "converged": true,
+        "cap_coef": -0.011255985503883178,
+        "cap_p": 0.3783167688363631,
+        "cap_ci": [
+          -0.0362971632179086,
+          0.013785192210142249
+        ],
+        "vc_repo": 0.15546166915283163,
+        "vc_developer": 0.06418650358993877
+      }
+    },
+    "per_cell": [
+      {
+        "family": "haiku",
+        "version": 4.5,
+        "n_sessions": 8,
+        "tau": 0.35225
+      },
+      {
+        "family": "sonnet",
+        "version": 4.5,
+        "n_sessions": 12,
+        "tau": 0.5255
+      },
+      {
+        "family": "sonnet",
+        "version": 4.6,
+        "n_sessions": 146,
+        "tau": 0.5685205479452055
+      },
+      {
+        "family": "sonnet",
+        "version": 5.0,
+        "n_sessions": 19,
+        "tau": 0.4461052631578947
+      },
+      {
+        "family": "opus",
+        "version": 4.5,
+        "n_sessions": 17,
+        "tau": 0.5354705882352941
+      },
+      {
+        "family": "opus",
+        "version": 4.6,
+        "n_sessions": 42,
+        "tau": 0.5571904761904762
+      },
+      {
+        "family": "opus",
+        "version": 4.7,
+        "n_sessions": 67,
+        "tau": 0.5329701492537313
+      },
+      {
+        "family": "opus",
+        "version": 4.8,
+        "n_sessions": 32,
+        "tau": 0.581
+      }
+    ],
+    "composition": {
+      "cells_by_family": {
+        "haiku": 1,
+        "opus": 4,
+        "sonnet": 3
+      },
+      "versions_without_a_cell": {
+        "haiku": [],
+        "opus": [
+          5.0
+        ],
+        "sonnet": []
+      }
+    }
+  }
+}
