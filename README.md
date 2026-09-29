@@ -8,6 +8,8 @@ viewing agentic coding through the lens of structured prediction and gradient bo
 with machine-checked Lean 4 proofs, three complementary experiments, and observational
 evidence from real production agentic sessions.
 
+📚 **[arXiv:2609.34924](https://arxiv.org/abs/2609.34924)** — the paper on arXiv (cs.LG).
+
 📄 **[Companion website](https://oncorpsai.github.io/audit-the-scaffold/)** — abstract, figures, and results at a glance (served from [`docs/`](docs/) via GitHub Pages).
 
 [![Code License: MIT](https://img.shields.io/badge/code%20license-MIT-blue.svg)](LICENSE)
@@ -382,13 +384,15 @@ no index row.
 ## Citation
 
 ```bibtex
-@article{bobadillasuarez2026agentic,
-  title   = {Audit the Scaffold, Not the Checkpoint: A Stationarity Dichotomy
-             for Recursive Self-Improvement in Agentic Coding},
-  author  = {Bobadilla-Suarez, Sebastian and Suh, Bob and Fortin, Ryan},
-  year    = {2026},
-  note    = {Preprint},
-  institution = {OnCorps}
+@misc{bobadillasuarez2026agentic,
+  title         = {Audit the Scaffold, Not the Checkpoint: A Stationarity Dichotomy
+                   for Recursive Self-Improvement in Agentic Coding},
+  author        = {Bobadilla-Suarez, Sebastian and Suh, Bob and Fortin, Ryan},
+  year          = {2026},
+  eprint        = {2609.34924},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2609.34924}
 }
 ```
 
