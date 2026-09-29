@@ -39,5 +39,13 @@ preferred-citation:
       affiliation: OnCorps
       email: ryan@oncorps.io
   year: 2026
-  month: 7
-  notes: "Preprint."
+  month: 9
+  url: "https://arxiv.org/abs/2609.34924"
+  identifiers:
+    - type: doi
+      value: 10.48550/arXiv.2609.34924
+      description: arXiv DOI
+    - type: url
+      value: "https://arxiv.org/abs/2609.34924"
+      description: arXiv abstract page
+  notes: "Preprint, arXiv:2609.34924 [cs.LG]."
