@@ -1,0 +1,20 @@
+paper_appendix.tex
+  s_2ece4ba9916196::t_ed79fa4d88a46f 476
+  s_2ece4ba9916196::t_dc062fbd13cb25 523,525,527,537,539
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "af7e192ac8d2d661f754740afc67206f1327651c",
+  "prompts": {},
+  "sessions": {
+    "s_2ece4ba9916196": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "339e0535-28b7-4695-88f6-91537c48b5f0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
