@@ -705,7 +705,7 @@ Conflating two claims here would overstate what the formalism delivers. The \emp
 \subsection{Remaining Limitations}
 \label{app:limitations}
 
-The main text states the two most consequential limitations (the weak-learning assumption and the tier-assignment confound). The remaining items:
+The main text states the four most consequential limitations (the shared human-baseline decay, the edge measurement and its confounds, unchecked restarts, and the tier-assignment confound). The remaining items:
 
 \begin{enumerate}[leftmargin=*,itemsep=2pt]
     \item \textbf{Self-refinement vs.\ a distinct reviewer role (untested architecture).} Part~B's feedback-mode ablation (\texttt{independent}/\texttt{blind}/\texttt{diagnostic}) varies what a \emph{single} agent is told about its own prior patch---it never introduces an architecturally separate reviewer or critic model that inspects the patch and returns its own feedback. Even the \texttt{diagnostic} arm's critique is deliberately narrow (which \texttt{FAIL\_TO\_PASS} tests still fail, with a one-line \texttt{pytest} hint), chosen to avoid leaking the gold pass/fail bit to the generating agent, not to be the richest signal a reviewer could give. A generator-plus-reviewer pipeline is a materially different, plausibly higher-edge and less-correlated feedback channel that this work does not test.

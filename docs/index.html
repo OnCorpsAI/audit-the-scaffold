@@ -322,12 +322,13 @@
 
   <section id="tldr">
     <div class="tldr">
-      <strong>TL;DR.</strong> An auditor who checks whether a system's weights are frozen is checking
-      the wrong thing. A <em>stationarity dichotomy</em> says refinement hits strict diminishing
+      <strong>TL;DR.</strong> Checking whether a system's weights are frozen may be the wrong
+      audit. A <em>stationarity dichotomy</em> says refinement hits strict diminishing
       returns whenever the agent's reachable set of edits stays fixed, and can escape only if that
-      set expands, and rewriting scaffolding (tools, verifiers, decomposition) expands it
-      <em>without touching a weight</em>. So frozen weights buy an <em>eventual</em> ceiling rather
-      than stationary behaviour along the way: audit the scaffold, not the checkpoint. The same ceiling
+      set expands, and we hypothesize that rewriting scaffolding (tools, verifiers, decomposition)
+      expands it <em>without touching a weight</em>. If so, frozen weights buy an <em>eventual</em>
+      ceiling rather than stationary behaviour along the way: audit the scaffold, not only the
+      checkpoint. We propose, but do not run, the fixed-weight experiment that would test this. The same ceiling
       binds sideways: best-of-<em>k</em> orchestration realizes the best worker's ceiling
       <em>exactly</em>, width buying rate rather than budget, and the weighted vote that would beat
       it needs diversity real workers lack. We reach the criterion by reading refinement as
@@ -339,41 +340,9 @@
 
   <section id="abstract">
     <h2>Abstract</h2>
-    <p class="abstract">An auditor who checks whether a system's weights are frozen is checking the
-      wrong thing. We give a criterion for when iterative self-modification runs out of room. This
-      <em>stationarity dichotomy</em> says that refinement hits strict diminishing returns whenever the
-      agent's reachable set of edits stays fixed, and can escape only if that set expands. Rewriting
-      scaffolding — tools, verifiers, decomposition — expands what an agent reaches without touching a
-      weight, so frozen weights buy an <em>eventual</em> ceiling but no stationarity
-      along the way. It also separates three regimes usually merged: search within a fixed class,
-      test-time <em>training</em> that raises the ceiling itself, and scaffold rewriting between them.
-      Audit the scaffold, not the checkpoint.</p>
-    <p class="abstract">The same ceiling binds sideways. Best-of-<em>k</em> orchestration
-      realizes the best worker's ceiling <em>exactly</em>: width buys rate, not budget. Re-consulting a
-      fixed pool has a horizon computable in advance, since either some nonnegative
-      combination of the pool already fits the work, or the edge hypothesis provably fails by round
-      log(1/ε<sub>0</sub>)/2γ², uniformly over the schedule. Exhaustive, mutually exclusive, and
-      decided by the pool alone. The one
-      arrangement that does better, a weighted vote, needs diversity real workers lack: a vote is
-      correct <em>iff</em> every task is failed by fewer than half the workers. On 6 same-family
-      configurations (30 workers across seeds) the overlap sits at its ceiling: some task defeats
-      every worker, and a majority fails 23/55 (42%) of tasks.</p>
-    <p class="abstract">We obtain the criterion by reading refinement as gradient boosting on the
-      <em>residual error</em> between draft and target, a patch or git diff, and then measure
-      where that reading breaks. Patches compose rather than standing beside each other to be voted
-      on, and failures overlap; both are properties of harnesses <em>as currently built</em> rather
-      than laws about code, and together they specify one worth building.</p>
-    <p class="abstract">Two empirical findings follow. Per-round improvement decays toward zero while
-      remaining positive, so depth saturates: the bounded regime, measured. Capability is the
-      lever that does move: over SWE-bench Lite (<em>K</em> = 55 tasks × 5 seeds, a 2×3 model-tier ×
-      feedback-mode ablation) the capability effect is large and significant (partial η² = 0.497,
-      <em>p</em> &lt; 0.0001) while feedback mode and the interaction are honestly-underpowered
-      nulls (11% / 17% power at this <em>K</em>). And 401 production agentic-coding sessions place
-      current practice in the bounded regime, churn decaying geometrically toward a survivor-ratio
-      ceiling, measured on the 70 sessions long enough to show a trend, and a signature
-      <em>shared</em> with a 9,395-session pre-AI human baseline, so it establishes the regime
-      without identifying its cause. Separating those requires holding weights fixed while varying
-      the scaffold, which is the experiment this data argues for.</p>
+    <p class="abstract">Rules for AI self-improvement often key on the model itself: has it been retrained, or are its weights (the trained model) frozen? We argue that, for AI coding agents, this check is incomplete, and we propose, but do not run, the experiment that would test the argument. The criterion is simple. An agent that keeps revising its own work runs into diminishing returns as long as the set of changes it can reach stays fixed, and can escape them only if that set grows. Our hypothesis is that the set can grow with the model untouched, because the software around the model, its <em>scaffold</em> of tools, tests and task breakdown, can be rewritten. If so, a frozen model guarantees a ceiling eventually but not steady behavior on the way there, and audits should track changes to the scaffold, not only to the model. The same criterion separates three things often lumped together: more search within a fixed setup, retraining the model during use (which can raise the ceiling), and rewriting the scaffold, which sits between them.</p>
+    <p class="abstract">Adding more agents does not lift the ceiling either. Picking the best of several agents' answers reaches the best single agent's ceiling exactly, and only gets there faster. A majority vote could do better, but only if the agents fail on different tasks. In our tests, 30 agents from one model family failed together: some task defeated all of them, and a majority failed 23/55 (42%) of tasks.</p>
+    <p class="abstract">Our evidence is descriptive. On a public coding benchmark, the gain from each extra round of revision shrinks toward zero, though the unsolved tasks left to measure are also fewer and harder. Across 401 real development sessions, the amount of code changed falls off steadily from commit to commit, but programmers working before AI tools show the same pattern, so the data show that current practice levels off without showing why. We reach the criterion by treating repeated revision as a known machine-learning method, boosting, and report where real agents depart from it. Those departures are design choices, and together they describe an agent setup worth building.</p>
   </section>
 
   <section id="contributions">
