@@ -1,0 +1,29 @@
+paper.tex
+  s_2ece4ba9916196::t_9741d93e994389 214,216,221,223,225,229,231
+  s_2ece4ba9916196::t_b255971f57745f 106-109
+  s_2ece4ba9916196::t_2c4dfccd5f53fc 233,236,238,240
+  s_2ece4ba9916196::t_99de737b00195e 140-142,149-151,158,165,172,174,181,183,190,192,201,208
+  s_2ece4ba9916196::t_9a92b6305359af 98,100-102
+  s_2ece4ba9916196::t_edd65f99fc0bf9 246,259,262-265,267,273
+  s_2ece4ba9916196::t_bc1cc7f8340901 116-118,120,122
+  s_2ece4ba9916196::t_5206a7dea47622 87,89,91
+  s_2ece4ba9916196::t_60394b0d07e9c8 128,130,132,134
+  s_2ece4ba9916196::t_68c28c91ad564f 248,250,252,254
+  s_2ece4ba9916196::t_dac2128debe839 219,227
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "55fbdd3ec2de51502dbcc0f7257470059735cb79",
+  "prompts": {},
+  "sessions": {
+    "s_2ece4ba9916196": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "339e0535-28b7-4695-88f6-91537c48b5f0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
